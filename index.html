@@ -34,6 +34,10 @@ button{
   background:#e8f5e9;border:none;border-radius:10px;
   padding:6px 10px;color:#2e7d32
 }
+.days{font-size:13px;font-weight:600}
+.days.ok{color:#2e7d32}
+.days.w30{color:#f9a825}
+.days.w7{color:#c62828}
 </style>
 </head>
 
@@ -64,7 +68,7 @@ let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
 
 function pasteSku(){
   navigator.clipboard.readText().then(t=>{
-    sku.value=t;
+    sku.value=t.trim();
     autoFillName();
   });
 }
@@ -75,29 +79,46 @@ function autoFillName(){
 
 function save(){
   if(!sku.value||!hsd.value) return;
-  skuMap[sku.value]=name.value||'';
-  data.push({sku:sku.value,name:name.value,hsd:hsd.value});
+
+  const item={
+    sku:sku.value,
+    name:name.value||'—',
+    hsd:hsd.value,
+    time:Date.now()
+  };
+
+  skuMap[item.sku]=item.name;
+  data.push(item);
+
   localStorage.setItem('dates',JSON.stringify(data));
   localStorage.setItem('skuMap',JSON.stringify(skuMap));
+
   sku.value=''; name.value=''; hsd.value='';
   render();
 }
 
 function daysLeft(d){
-  return Math.ceil((new Date(d)-new Date())/86400000);
+  return Math.ceil((new Date(d).setHours(23,59,59)-Date.now())/86400000);
 }
 
 function render(){
   list.innerHTML='';
-  data.forEach(i=>{
+  data
+   .sort((a,b)=>new Date(a.hsd)-new Date(b.hsd))
+   .forEach(i=>{
     const d=daysLeft(i.hsd);
+    let cls='ok', txt=`Còn ${d} ngày`;
+    if(d<=7){cls='w7';txt=`⚠️ Còn ${d} ngày`}
+    else if(d<=30){cls='w30';txt=`⏰ Còn ${d} ngày`}
+
     const div=document.createElement('div');
     div.className='item'+(d<=7?' warn7':d<=30?' warn30':'');
     div.innerHTML=`
       <div>
-        <b>${i.name||'—'}</b><br>
+        <b>${i.name}</b><br>
         ${i.sku}<br>
-        HSD: ${i.hsd.split('-').reverse().join('-')}
+        HSD: ${i.hsd.split('-').reverse().join('-')}<br>
+        <span class="days ${cls}">${txt}</span>
       </div>
       <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy</button>
     `;
