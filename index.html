@@ -52,6 +52,7 @@ button{
   background:#1565c0;
   color:#fff;
   font-size:16px;
+  margin-bottom:10px;
 }
 .list{
   margin-top:18px;
@@ -62,6 +63,7 @@ button{
 }
 .expire-soon{color:#ef6c00;}
 .expired{color:#c62828;}
+.small{font-size:13px;color:#666}
 </style>
 </head>
 
@@ -72,21 +74,30 @@ button{
 <label>Tên sản phẩm</label>
 <input id="name" placeholder="VD: Sữa tươi">
 
-<label>Mã / SKU (tuỳ chọn)</label>
-<input id="sku" placeholder="QR / mã sản phẩm">
+<label>Mã / SKU</label>
+<input id="sku" placeholder="Quét hoặc nhập mã">
+<button style="background:#2e7d32" onclick="startScan()">📷 Quét QR</button>
 
 <label>Ngày hết hạn</label>
 <input type="date" id="expire">
 
 <button onclick="saveItem()">➕ Lưu sản phẩm</button>
 
+<div id="qrBox" style="display:none;margin-top:10px">
+  <div id="reader" style="width:100%"></div>
+  <button style="background:#c62828" onclick="stopScan()">✖ Đóng camera</button>
+</div>
+
 <div class="list" id="list"></div>
 </div>
 
-<script>
-let db;
+<!-- QR library -->
+<script src="https://unpkg.com/html5-qrcode"></script>
 
-// === IndexedDB ===
+<script>
+let db, qr;
+
+// ===== IndexedDB =====
 function openDB(){
   return new Promise((res,rej)=>{
     const req = indexedDB.open('kiem-date-db',1);
@@ -101,18 +112,24 @@ function openDB(){
 }
 
 function saveItem(){
-  const name = document.getElementById('name').value.trim();
-  const sku = document.getElementById('sku').value.trim();
-  const expire = document.getElementById('expire').value;
-  if(!name || !expire) return alert('Nhập đủ thông tin');
+  const nameEl = document.getElementById('name');
+  const skuEl = document.getElementById('sku');
+  const expEl = document.getElementById('expire');
+
+  if(!nameEl.value || !expEl.value){
+    alert('Nhập tên và ngày hết hạn');
+    return;
+  }
 
   const tx = db.transaction('items','readwrite');
   tx.objectStore('items').add({
-    name, sku, expire,
+    name: nameEl.value.trim(),
+    sku: skuEl.value.trim(),
+    expire: expEl.value,
     created: new Date().toISOString()
   });
 
-  name.value = sku.value = expire.value = '';
+  nameEl.value = skuEl.value = expEl.value = '';
   setTimeout(loadItems,200);
 }
 
@@ -121,7 +138,7 @@ function loadItems(){
   const req = tx.objectStore('items').getAll();
   req.onsuccess = ()=>{
     const now = new Date();
-    list.innerHTML = '';
+    list.innerHTML='';
     req.result.forEach(it=>{
       const d = new Date(it.expire);
       const diff = Math.ceil((d-now)/86400000);
@@ -129,13 +146,34 @@ function loadItems(){
       if(diff<0){cls='expired';txt='Đã hết hạn';}
       else if(diff<=7){cls='expire-soon';}
 
-      list.innerHTML += `
+      list.innerHTML+=`
         <div class="item ${cls}">
           <b>${it.name}</b><br>
-          HSD: ${it.expire} – ${txt}
+          <span class="small">HSD: ${it.expire} – ${txt}</span>
         </div>`;
     });
   };
+}
+
+// ===== QR Scan =====
+function startScan(){
+  document.getElementById('qrBox').style.display='block';
+  qr = new Html5Qrcode("reader");
+  qr.start(
+    { facingMode:"environment" },
+    { fps:10, qrbox:250 },
+    txt=>{
+      document.getElementById('sku').value = txt;
+      stopScan();
+    }
+  );
+}
+
+function stopScan(){
+  if(qr){
+    qr.stop().then(()=>qr.clear());
+  }
+  document.getElementById('qrBox').style.display='none';
 }
 
 // init
