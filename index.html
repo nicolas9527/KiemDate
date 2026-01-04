@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2e7d32">
 <title>Kiểm Date</title>
+
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,Arial;background:linear-gradient(#eef7ee,#e3f2e1);margin:0;padding:12px}
 .container{background:#fff;border-radius:18px;padding:14px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
@@ -17,10 +18,12 @@ button{flex:1;height:36px;background:linear-gradient(#43a047,#2e7d32);color:#fff
 .list{margin-top:14px}
 .item{background:#f1f8e9;border-radius:12px;padding:10px;margin-bottom:8px;font-size:15px}
 .item-row{display:flex;justify-content:space-between;align-items:center}
-.copy{flex:none;width:auto;padding:6px 10px;font-size:14px}
-.expired{color:#c62828;font-weight:600}
+.copy{padding:6px 10px;font-size:14px}
+.warn30{background:#fff8e1}
+.warn7{background:#ffebee;color:#c62828;font-weight:600}
 </style>
 </head>
+
 <body>
 <div class="container">
 <h2>📆 KIỂM DATE</h2>
@@ -44,11 +47,22 @@ async function pasteSKU(){
   try{
     const t=await navigator.clipboard.readText();
     if(t) sku.value=t.trim();
-  }catch{alert('Không đọc được clipboard')}
+  }catch{}
 }
 
 function copyText(t){
   navigator.clipboard.writeText(t);
+}
+
+function fmt(d){
+  const [y,m,da]=d.split('-');
+  return `${da}-${m}-${y}`;
+}
+
+function daysLeft(d){
+  const today=new Date();
+  const exp=new Date(d+'T00:00');
+  return Math.ceil((exp-today)/86400000);
 }
 
 let db;
@@ -70,21 +84,26 @@ function saveItem(){
 function loadList(){
   const tx=db.transaction('items','readonly');
   tx.objectStore('items').getAll().onsuccess=e=>{
-    const today=new Date().toISOString().slice(0,10);
     list.innerHTML='';
-    e.target.result.sort((a,b)=>b.time-a.time).forEach(it=>{
-      const exp=it.date<today;
-      list.innerHTML+=`
-      <div class="item ${exp?'expired':''}">
-        <div class="item-row">
-          <div>
-            SKU: <b>${it.sku}</b><br>
-            HSD: ${it.date} ${exp?'⚠️ Hết hạn':''}
+    e.target.result
+      .sort((a,b)=>a.date.localeCompare(b.date))
+      .forEach(it=>{
+        const d=daysLeft(it.date);
+        let cls='';
+        if(d<=7) cls='warn7';
+        else if(d<=30) cls='warn30';
+
+        list.innerHTML+=`
+        <div class="item ${cls}">
+          <div class="item-row">
+            <div>
+              SKU: <b>${it.sku}</b><br>
+              HSD: ${fmt(it.date)} (${d} ngày)
+            </div>
+            <button class="copy" onclick="copyText('${it.sku}')">📋</button>
           </div>
-          <button class="copy" onclick="copyText('${it.sku}')">📋</button>
-        </div>
-      </div>`;
-    });
+        </div>`;
+      });
   };
 }
 </script>
