@@ -5,131 +5,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2e7d32">
-
 <title>Kiểm Date</title>
-
 <style>
-body{
-  font-family:-apple-system,BlinkMacSystemFont,Arial;
-  background:linear-gradient(#eef7ee,#e3f2e1);
-  margin:0;padding:12px;
-}
-.container{
-  background:#fff;
-  border-radius:18px;
-  padding:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-}
+body{font-family:-apple-system,BlinkMacSystemFont,Arial;background:linear-gradient(#eef7ee,#e3f2e1);margin:0;padding:12px}
+.container{background:#fff;border-radius:18px;padding:14px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
 h2{text-align:center;color:#2e7d32;margin:6px 0 14px}
-
 label{font-weight:600;color:#2e7d32}
-input{
-  width:100%;height:40px;
-  font-size:16px;
-  margin:6px 0 12px;
-  border-radius:10px;
-  border:1.5px solid #a5d6a7;
-  background:#f1f8e9;
-  padding:0 10px;
-}
-
-button{
-  width:100%;height:44px;
-  background:linear-gradient(#43a047,#2e7d32);
-  color:#fff;
-  border:none;
-  border-radius:12px;
-  font-size:17px;
-}
-
-.list{
-  margin-top:14px;
-}
-.item{
-  background:#f1f8e9;
-  border-radius:12px;
-  padding:10px;
-  margin-bottom:8px;
-  font-size:15px;
-}
+input{width:100%;height:40px;font-size:16px;margin:6px 0 10px;border-radius:10px;border:1.5px solid #a5d6a7;background:#f1f8e9;padding:0 10px}
+.btn-row{display:flex;gap:8px;margin-bottom:12px}
+button{flex:1;height:44px;background:linear-gradient(#43a047,#2e7d32);color:#fff;border:none;border-radius:12px;font-size:16px}
+.list{margin-top:14px}
+.item{background:#f1f8e9;border-radius:12px;padding:10px;margin-bottom:8px;font-size:15px}
 .expired{color:#c62828;font-weight:600}
 </style>
 </head>
-
 <body>
 <div class="container">
 <h2>📆 KIỂM DATE</h2>
 
-<label>SKU (chạm để dán)</label>
-<input id="sku" placeholder="Chạm để dán SKU" onclick="pasteSKU()">
+<label>SKU</label>
+<input id="sku" placeholder="Nhập hoặc dán mã">
+
+<div class="btn-row">
+<button onclick="pasteSKU()">📋 Dán mã</button>
+<button onclick="saveItem()">💾 Lưu</button>
+</div>
 
 <label>Hạn sử dụng</label>
 <input type="date" id="date">
-
-<button onclick="saveItem()">Lưu sản phẩm</button>
 
 <div class="list" id="list"></div>
 </div>
 
 <script>
-/* ===== CLIPBOARD ===== */
 async function pasteSKU(){
   try{
-    const text = await navigator.clipboard.readText();
-    if(text) sku.value = text.trim();
-  }catch{
-    alert('Không đọc được clipboard');
-  }
+    const t=await navigator.clipboard.readText();
+    if(t) sku.value=t.trim();
+  }catch{alert('Không đọc được clipboard')}
 }
 
-/* ===== INDEXED DB ===== */
 let db;
-const req = indexedDB.open('kiemdateDB',1);
-
-req.onupgradeneeded = e=>{
-  db = e.target.result;
+const req=indexedDB.open('kiemdateDB',1);
+req.onupgradeneeded=e=>{
+  db=e.target.result;
   db.createObjectStore('items',{keyPath:'id',autoIncrement:true});
 };
-
-req.onsuccess = e=>{
-  db = e.target.result;
-  loadList();
-};
+req.onsuccess=e=>{db=e.target.result;loadList()};
 
 function saveItem(){
-  if(!sku.value || !date.value) return;
-
-  const tx = db.transaction('items','readwrite');
-  tx.objectStore('items').add({
-    sku: sku.value,
-    date: date.value,
-    time: Date.now()
-  });
-
-  sku.value=''; date.value='';
-  tx.oncomplete = loadList;
+  if(!sku.value||!date.value)return;
+  const tx=db.transaction('items','readwrite');
+  tx.objectStore('items').add({sku:sku.value,date:date.value,time:Date.now()});
+  sku.value='';date.value='';
+  tx.oncomplete=loadList;
 }
 
 function loadList(){
-  const tx = db.transaction('items','readonly');
-  const store = tx.objectStore('items');
-  const req = store.getAll();
-
-  req.onsuccess = ()=>{
+  const tx=db.transaction('items','readonly');
+  tx.objectStore('items').getAll().onsuccess=e=>{
+    const today=new Date().toISOString().slice(0,10);
     list.innerHTML='';
-    const today = new Date().toISOString().slice(0,10);
-
-    req.result
-      .sort((a,b)=>b.time-a.time)
-      .forEach(it=>{
-        const exp = it.date < today;
-        list.innerHTML += `
-          <div class="item ${exp?'expired':''}">
-            SKU: <b>${it.sku}</b><br>
-            HSD: ${it.date} ${exp?'⚠️ Hết hạn':''}
-          </div>
-        `;
-      });
+    e.target.result.sort((a,b)=>b.time-a.time).forEach(it=>{
+      const exp=it.date<today;
+      list.innerHTML+=`
+      <div class="item ${exp?'expired':''}">
+        SKU: <b>${it.sku}</b><br>
+        HSD: ${it.date} ${exp?'⚠️ Hết hạn':''}
+      </div>`;
+    });
   };
 }
 </script>
