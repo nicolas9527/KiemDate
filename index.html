@@ -22,9 +22,9 @@ body {
     max-width: 500px;
     margin: 0 auto;
 }
-h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
+h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-/* --- FORM NHẬP LIỆU (ĐÃ FIX CÂN BẰNG) --- */
+/* --- FORM NHẬP LIỆU (CĂN GIỮA TUYỆT ĐỐI) --- */
 .input-group {
     margin-bottom: 16px;
 }
@@ -36,22 +36,29 @@ label {
     font-size: 14px; 
 }
 
-/* Đảm bảo tất cả input đều có cùng thông số */
+/* Fix lỗi lệch chữ cho tất cả các ô nhập */
 input[type="text"], 
-input[type="date"],
-input {
+input[type="date"] {
     width: 100%;
-    height: 48px; /* Cố định chiều cao */
+    height: 50px; /* Tăng nhẹ chiều cao để chữ thoáng hơn */
     font-size: 16px;
     border-radius: 12px;
     border: 2px solid #a5d6a7;
     background: #fff;
     padding: 0 12px;
-    display: block;
-    box-sizing: border-box; /* Ép trình duyệt tính cả border vào height */
+    display: flex;         /* Sử dụng flex để căn giữa */
+    align-items: center;    /* Căn giữa theo chiều dọc */
+    box-sizing: border-box;
     outline: none;
-    -webkit-appearance: none; /* Khử định dạng riêng của iOS */
+    -webkit-appearance: none;
     appearance: none;
+    line-height: normal;    /* Reset line-height để không bị đẩy chữ */
+}
+
+/* Riêng ô Date cần thêm thuộc tính để căn giữa nội dung bên trong trên iOS */
+input[type="date"] {
+    justify-content: center; /* Căn giữa chữ ngày tháng */
+    text-align: center;
 }
 
 input:focus { 
@@ -59,11 +66,12 @@ input:focus {
     box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); 
 }
 
-/* --- NÚT BẤM CHÍNH --- */
+/* --- NÚT BẤM --- */
 .btns { display: flex; gap: 10px; margin-top: 5px; }
 .main-btn {
     flex: 1; height: 48px; border: none; border-radius: 12px;
     font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .paste { background: #81c784; }
 .save { background: linear-gradient(#43a047, #2e7d32); }
@@ -85,17 +93,15 @@ input:focus {
     color: #2e7d32;
     font-size: 13px;
     font-weight: 600;
-    outline: none;
 }
 
-/* --- DANH SÁCH SẢN PHẨM --- */
+/* --- DANH SÁCH --- */
 .item {
     background: #fff; border-radius: 15px; padding: 15px;
     margin-bottom: 12px; border-left: 6px solid #a5d6a7;
     position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     padding-right: 50px;
 }
-
 .icon-btn {
     position: absolute; right: 10px;
     width: 34px; height: 34px;
@@ -103,10 +109,10 @@ input:focus {
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
 }
-.del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 20px; }
+.del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 18px; }
 .copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
 
-/* --- TRẠNG THÁI CẢNH BÁO --- */
+/* --- MÀU SẮC CẢNH BÁO --- */
 .warn30 { border-left-color: #fbc02d; }
 .w30 { color: #f9a825; font-weight: 700; }
 .warn7 { border-left-color: #c62828; }
