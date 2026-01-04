@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>KIỂM DATE</title>
 
 <style>
@@ -13,6 +13,7 @@ body {
     background: #eaf4e6;
     padding: 14px;
     color: #333;
+    -webkit-tap-highlight-color: transparent;
 }
 .app {
     background: #f4faee;
@@ -24,7 +25,7 @@ body {
 }
 h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
 
-/* --- FORM NHẬP LIỆU (FIX CĂN GIỮA TUYỆT ĐỐI) --- */
+/* --- FORM NHẬP LIỆU (FIX CÂN BẰNG & TRUNG TÂM) --- */
 .input-group { margin-bottom: 16px; }
 label { color: #2e7d32; font-weight: 700; margin-bottom: 6px; display: block; font-size: 14px; }
 
@@ -36,21 +37,18 @@ input {
     border: 2px solid #a5d6a7;
     background: #fff;
     padding: 0 12px;
-    display: block;
+    display: flex;
+    align-items: center; /* Căn giữa dọc */
     box-sizing: border-box;
     outline: none;
     -webkit-appearance: none;
     appearance: none;
-    /* Căn giữa chữ cho cả iPhone/Android */
-    line-height: 1.2; 
 }
 
-/* Riêng ô date cần ép căn giữa dọc */
+/* Fix riêng cho ô Date trên iOS để chữ nằm giữa */
 input[type="date"] {
-    display: flex;
-    align-items: center;
-    padding-top: 0;
-    padding-bottom: 0;
+    line-height: 46px; /* Cân bằng với height 50px */
+    position: relative;
 }
 
 input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
@@ -110,12 +108,12 @@ svg { width: 18px; height: 18px; fill: currentColor; }
 
   <div class="input-group">
     <label>Mã SKU</label>
-    <input id="sku" type="text" placeholder="Nhập mã SKU..." autofocus>
+    <input id="sku" type="text" placeholder="Nhập hoặc dán mã..." autocomplete="off">
   </div>
 
   <div class="input-group">
     <label>Tên sản phẩm</label>
-    <input id="name" type="text" placeholder="Tên sẽ tự hiện nếu đã lưu">
+    <input id="name" type="text" placeholder="Tên tự hiện nếu đã lưu">
   </div>
 
   <div class="input-group">
@@ -124,7 +122,7 @@ svg { width: 18px; height: 18px; fill: currentColor; }
   </div>
 
   <div class="btns">
-    <button class="main-btn paste" onclick="quickPaste()">📋 Dán mã</button>
+    <button class="main-btn paste" onclick="smartPaste()">📋 Dán mã</button>
     <button class="main-btn save" onclick="save()">💾 Lưu lại</button>
   </div>
 
@@ -148,49 +146,45 @@ const skuInput = document.getElementById('sku');
 const nameInput = document.getElementById('name');
 const hsdInput = document.getElementById('hsd');
 
-// Tự nhận diện tên
 skuInput.addEventListener('input', () => {
     const val = skuInput.value.trim();
     if(skuMap[val]) nameInput.value = skuMap[val];
 });
 
-// HÀM DÁN SIÊU TỐC - 1 CLICK
-async function quickPaste() {
+// HÀM DÁN THÔNG MINH CHO IPHONE
+async function smartPaste() {
     try {
+        // Thử dán tự động nếu đã có quyền
         const text = await navigator.clipboard.readText();
-        const clipped = text.trim();
-        if (clipped) {
-            skuInput.value = clipped;
-            if (skuMap[clipped]) nameInput.value = skuMap[clipped];
+        if (text) {
+            skuInput.value = text.trim();
+            if (skuMap[text.trim()]) nameInput.value = skuMap[text.trim()];
             hsdInput.focus();
-            // Mở trình chọn ngày nếu trình duyệt hỗ trợ
-            try { hsdInput.showPicker(); } catch(e){}
+            return;
         }
-    } catch (err) {
-        alert("Vui lòng cho phép trình duyệt truy cập Clipboard để sử dụng tính năng dán nhanh!");
+    } catch (e) {
+        // Nếu iPhone chặn, tự động focus để hiện nút "Dán" của hệ thống
+        skuInput.focus();
+        // Một số máy sẽ hiện menu Dán khi click 2 lần hoặc focus
     }
 }
 
 function save(){
   if(!skuInput.value || !hsdInput.value) {
-      alert("⚠️ Thiếu thông tin!"); return;
+      alert("⚠️ Hãy nhập đủ SKU và HSD!"); return;
   }
-  const fName = (nameInput.value || 'Không tên').trim();
+  const fName = (nameInput.value || 'Sản phẩm mới').trim();
   const fSku = skuInput.value.trim();
-
   skuMap[fSku] = fName;
   data.push({ sku: fSku, name: fName, hsd: hsdInput.value });
-  
   localStorage.setItem('dates', JSON.stringify(data));
   localStorage.setItem('skuMap', JSON.stringify(skuMap));
-
   skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
   render();
-  skuInput.focus();
 }
 
 function deleteItem(index) {
-    if(confirm("Xóa mục này?")) {
+    if(confirm("Xóa dòng này?")) {
         data.splice(index, 1);
         localStorage.setItem('dates', JSON.stringify(data));
         render();
@@ -220,8 +214,7 @@ function render(){
   data.forEach((i, index) => {
     const d = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
     let cls = '', txt = `Còn ${d} ngày`, tcls = '';
-    
-    if (d < 0) { cls = 'warn7'; txt = `HẾT HẠN (${Math.abs(d)} ngày)`; tcls = 'expired'; }
+    if (d < 0) { cls = 'warn7'; txt = `HẾT HẠN`; tcls = 'expired'; }
     else if (d <= 7) { cls = 'warn7'; txt = `⚠️ Còn ${d} ngày`; tcls = 'w7'; }
     else if (d <= 30) { cls = 'warn30'; txt = `⏰ Còn ${d} ngày`; tcls = 'w30'; }
 
@@ -241,7 +234,6 @@ function render(){
     </div>`;
   });
 }
-
 render();
 </script>
 </body>
