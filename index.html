@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KIỂM DATE</title>
+<title>KIỂM DATE - UPDATED</title>
 
 <style>
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#eaf4e6;padding:14px}
-.app{background:#f4faee;border-radius:22px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.app{background:#f4faee;border-radius:22px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,.08); max-width: 500px; margin: auto;}
 h1{text-align:center;color:#2e7d32;margin:6px 0 18px;font-size:22px}
 
 label{color:#2e7d32;font-weight:600;margin-bottom:6px;display:block}
@@ -20,7 +20,7 @@ input{
 .btns{display:flex;gap:12px}
 button{
   flex:1;height:46px;border:none;border-radius:14px;
-  font-size:16px;font-weight:600;color:#fff
+  font-size:16px;font-weight:600;color:#fff;cursor:pointer
 }
 .paste{background:#81c784}
 .save{background:linear-gradient(#43a047,#2e7d32)}
@@ -28,17 +28,23 @@ button{
 .list{margin-top:20px}
 .item{
   background:#fff;border-radius:16px;padding:12px;
-  margin-bottom:10px;border-left:6px solid #a5d6a7
+  margin-bottom:10px;border-left:6px solid #a5d6a7;
+  position: relative;
 }
 .warn30{border-left-color:#fbc02d}
 .warn7{border-left-color:#c62828}
 
 .copy{
   margin-top:8px;background:#e8f5e9;border:none;border-radius:10px;
-  padding:6px 10px;color:#2e7d32
+  padding:6px 10px;color:#2e7d32; font-size: 12px;
+}
+.del-btn{
+  position: absolute; top: 10px; right: 10px; 
+  background: none; border: none; color: #ccc; font-size: 18px;
 }
 .w30{color:#f9a825;font-weight:700}
 .w7{color:#c62828;font-weight:700}
+.expired{color:#b71c1c; font-weight: 800; text-transform: uppercase;}
 </style>
 </head>
 
@@ -67,64 +73,100 @@ button{
 let data = JSON.parse(localStorage.getItem('dates')||'[]');
 let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
 
+// Hàm dán mã và tự điền tên nếu đã từng lưu SKU này
 function pasteSku(){
   navigator.clipboard.readText().then(t=>{
-    sku.value=t.trim();
-    if(skuMap[sku.value]) name.value=skuMap[sku.value];
+    const clipped = t.trim();
+    document.getElementById('sku').value = clipped;
+    if(skuMap[clipped]) {
+        document.getElementById('name').value = skuMap[clipped];
+    }
   });
 }
 
 function save(){
-  if(!sku.value||!hsd.value) return;
+  const nameInput = document.getElementById('name');
+  const skuInput = document.getElementById('sku');
+  const hsdInput = document.getElementById('hsd');
 
-  const item={
-    sku:sku.value.trim(),
-    name:(name.value||'—').trim(),
-    hsd:hsd.value
+  if(!skuInput.value || !hsdInput.value) {
+      alert("Vui lòng nhập đủ SKU và Hạn sử dụng!");
+      return;
+  }
+
+  const finalName = (nameInput.value || 'Sản phẩm không tên').trim();
+  const finalSku = skuInput.value.trim();
+
+  const item = {
+    sku: finalSku,
+    name: finalName,
+    hsd: hsdInput.value
   };
 
-  if(item.name!=='—') skuMap[item.sku]=item.name;
+  // Cập nhật bản đồ SKU để lần sau tự gợi ý tên này
+  skuMap[finalSku] = finalName;
 
   data.push(item);
-  localStorage.setItem('dates',JSON.stringify(data));
-  localStorage.setItem('skuMap',JSON.stringify(skuMap));
+  localStorage.setItem('dates', JSON.stringify(data));
+  localStorage.setItem('skuMap', JSON.stringify(skuMap));
 
-  sku.value=''; name.value=''; hsd.value='';
+  // Xóa form sau khi lưu
+  skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
   render();
 }
 
+function deleteItem(index) {
+    if(confirm("Xóa dòng này?")) {
+        data.splice(index, 1);
+        localStorage.setItem('dates', JSON.stringify(data));
+        render();
+    }
+}
+
 function daysLeft(d){
-  return Math.ceil((new Date(d+'T23:59:59')-Date.now())/86400000);
+  // Tính toán dựa trên mốc cuối ngày để chính xác hơn
+  const diff = Math.ceil((new Date(d+'T23:59:59') - Date.now()) / 86400000);
+  return diff;
 }
 
 function render(){
-  list.innerHTML='';
-  let changed=false;
+  const listDiv = document.getElementById('list');
+  listDiv.innerHTML = '';
 
-  data.sort((a,b)=>new Date(a.hsd)-new Date(b.hsd)).forEach(i=>{
-    if((!i.name||i.name==='—') && skuMap[i.sku]){
-      i.name=skuMap[i.sku];
-      changed=true;
+  // Sắp xếp theo ngày gần hết hạn nhất lên đầu
+  data.sort((a,b) => new Date(a.hsd) - new Date(b.hsd));
+
+  data.forEach((i, index) => {
+    const d = daysLeft(i.hsd);
+    let cls = '', txt = `Còn ${d} ngày`, tcls = '';
+    
+    if (d < 0) {
+        cls = 'warn7';
+        txt = `❌ ĐÃ HẾT HẠN (${Math.abs(d)} ngày)`;
+        tcls = 'expired';
+    } else if (d <= 7) {
+        cls = 'warn7';
+        txt = `⚠️ Còn ${d} ngày (Gấp)`;
+        tcls = 'w7';
+    } else if (d <= 30) {
+        cls = 'warn30';
+        txt = `⏰ Còn ${d} ngày`;
+        tcls = 'w30';
     }
 
-    const d=daysLeft(i.hsd);
-    let cls='', txt=`Còn ${d} ngày`, tcls='';
-    if(d<=7){cls='warn7';txt=`⚠️ Còn ${d} ngày`;tcls='w7'}
-    else if(d<=30){cls='warn30';txt=`⏰ Còn ${d} ngày`;tcls='w30'}
-
-    list.innerHTML+=`
+    listDiv.innerHTML += `
     <div class="item ${cls}">
-      <b>${i.name||'—'}</b><br>
-      SKU: ${i.sku}<br>
-      HSD: ${i.hsd.split('-').reverse().join('-')}<br>
+      <button class="del-btn" onclick="deleteItem(${index})">×</button>
+      <b>${i.name}</b><br>
+      <small>SKU: ${i.sku}</small><br>
+      <small>HSD: ${i.hsd.split('-').reverse().join('/')}</small><br>
       <span class="${tcls}">${txt}</span><br>
       <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy SKU</button>
     </div>`;
   });
-
-  if(changed) localStorage.setItem('dates',JSON.stringify(data));
 }
 
+// Chạy lần đầu khi load trang
 render();
 </script>
 </body>
