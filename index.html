@@ -25,16 +25,16 @@ button{
 .save{background:linear-gradient(#43a047,#2e7d32)}
 .list{margin-top:20px}
 .item{
-  background:#fff;border-radius:14px;padding:12px;
-  margin-bottom:10px;display:flex;justify-content:space-between;align-items:center
+  background:#fff;border-radius:16px;padding:12px;
+  margin-bottom:10px;border-left:6px solid #a5d6a7
 }
-.item.warn30{border-left:6px solid #fbc02d}
-.item.warn7{border-left:6px solid #c62828}
+.warn30{border-left-color:#fbc02d}
+.warn7{border-left-color:#c62828}
 .copy{
-  background:#e8f5e9;border:none;border-radius:10px;
+  margin-top:8px;background:#e8f5e9;border:none;border-radius:10px;
   padding:6px 10px;color:#2e7d32
 }
-.days{font-size:13px;font-weight:600}
+.days{font-weight:700}
 .w30{color:#f9a825}
 .w7{color:#c62828}
 </style>
@@ -47,7 +47,7 @@ button{
   <label>Tên sản phẩm</label>
   <input id="name" placeholder="Nhập tên sản phẩm">
 
-  <label>SKU</label>
+  <label>Mã SKU</label>
   <input id="sku" placeholder="Nhập hoặc dán mã">
 
   <label>Hạn sử dụng</label>
@@ -77,16 +77,13 @@ function save(){
 
   const item={
     sku:sku.value.trim(),
-    name:(name.value||'').trim(),
-    hsd:hsd.value,
-    time:Date.now()
+    name:(name.value||'—').trim(),
+    hsd:hsd.value
   };
 
-  // LƯU MAP SKU → TÊN
-  if(item.name) skuMap[item.sku]=item.name;
+  if(item.name && item.name!=='—') skuMap[item.sku]=item.name;
 
   data.push(item);
-
   localStorage.setItem('dates',JSON.stringify(data));
   localStorage.setItem('skuMap',JSON.stringify(skuMap));
 
@@ -100,30 +97,23 @@ function daysLeft(d){
 
 function render(){
   list.innerHTML='';
-  data
-    .sort((a,b)=>new Date(a.hsd)-new Date(b.hsd))
-    .forEach(i=>{
-      // BACKFILL TÊN NẾU BẢN GHI CŨ CHƯA CÓ
-      if(!i.name && skuMap[i.sku]) i.name=skuMap[i.sku];
+  data.sort((a,b)=>new Date(a.hsd)-new Date(b.hsd)).forEach(i=>{
+    if(!i.name||i.name==='—') i.name = skuMap[i.sku] || '—';
 
-      const d=daysLeft(i.hsd);
-      let cls='', txt=`Còn ${d} ngày`;
-      if(d<=7){cls='warn7';txt=`⚠️ Còn ${d} ngày`}
-      else if(d<=30){cls='warn30';txt=`⏰ Còn ${d} ngày`}
+    const d = daysLeft(i.hsd);
+    let cls='', dcls='', txt=`Còn ${d} ngày`;
+    if(d<=7){cls='warn7';dcls='w7';txt=`⚠️ Còn ${d} ngày`}
+    else if(d<=30){cls='warn30';dcls='w30';txt=`⏰ Còn ${d} ngày`}
 
-      list.innerHTML+=`
-      <div class="item ${cls}">
-        <div>
-          <b>${i.name||'—'}</b><br>
-          ${i.sku}<br>
-          HSD: ${i.hsd.split('-').reverse().join('-')}<br>
-          <span class="days ${d<=7?'w7':d<=30?'w30':''}">${txt}</span>
-        </div>
-        <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy</button>
-      </div>`;
-    });
-
-  localStorage.setItem('dates',JSON.stringify(data));
+    list.innerHTML+=`
+    <div class="item ${cls}">
+      <b>${i.name}</b><br>
+      SKU: ${i.sku}<br>
+      HSD: ${i.hsd.split('-').reverse().join('-')}<br>
+      <span class="days ${dcls}">${txt}</span><br>
+      <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy SKU</button>
+    </div>`;
+  });
 }
 render();
 </script>
