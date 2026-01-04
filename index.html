@@ -1,88 +1,133 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>KIỂM DATE</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KIỂM DATE">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+    
+    <title>KIỂM DATE</title>
+    <link rel="manifest" href="manifest.json">
 
-<link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            background: #eaf4e6;
+            padding: 14px;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app {
+            background: #f4faee;
+            border-radius: 22px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
 
-<style>
-/* Giữ nguyên CSS cũ của bạn và thêm một chút cho giao diện App */
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-    background: #eaf4e6;
-    padding: 14px;
-    color: #333;
-    -webkit-tap-highlight-color: transparent;
-}
-.app {
-    background: #f4faee;
-    border-radius: 22px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    max-width: 500px;
-    margin: 0 auto;
-}
-h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
-.input-group { margin-bottom: 16px; }
-label { color: #2e7d32; font-weight: 700; margin-bottom: 6px; display: block; font-size: 14px; }
-input {
-    width: 100%; height: 50px; font-size: 16px; border-radius: 12px;
-    border: 2px solid #a5d6a7; background: #fff; padding: 0 12px;
-    display: flex; align-items: center; box-sizing: border-box; outline: none;
-    -webkit-appearance: none; appearance: none;
-}
-input[type="date"] { line-height: 46px; }
-input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
-.btns { display: flex; gap: 10px; margin-top: 5px; }
-.main-btn {
-    flex: 1; height: 50px; border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.paste { background: #81c784; }
-.save { background: linear-gradient(#43a047, #2e7d32); }
-.filter-container { display: flex; justify-content: flex-end; align-items: center; margin: 25px 0 10px; gap: 8px; }
-#sortSelect { padding: 8px 12px; border-radius: 10px; border: 1px solid #a5d6a7; background: #fff; color: #2e7d32; font-size: 13px; font-weight: 600; }
-.item { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 6px solid #a5d6a7; position: relative; padding-right: 50px; }
-.icon-btn { position: absolute; right: 10px; width: 34px; height: 34px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; }
-.del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 18px; }
-.copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
-.warn30 { border-left-color: #fbc02d; }
-.w30 { color: #f9a825; font-weight: 700; }
-.warn7 { border-left-color: #c62828; }
-.w7 { color: #c62828; font-weight: 700; }
-.expired { color: #b71c1c; font-weight: 900; text-transform: uppercase; }
-.info-row { margin-bottom: 4px; line-height: 1.4; }
-.p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
-.p-sku { color: #666; font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-svg { width: 18px; height: 18px; fill: currentColor; }
-</style>
+        /* INPUT CÂN BẰNG TUYỆT ĐỐI */
+        .input-group { margin-bottom: 16px; }
+        label { color: #2e7d32; font-weight: 700; margin-bottom: 6px; display: block; font-size: 14px; }
+        
+        input {
+            width: 100%;
+            height: 50px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px solid #a5d6a7;
+            background: #fff;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        /* Căn giữa chữ ngày tháng trên iOS */
+        input[type="date"] {
+            line-height: 46px; 
+            display: flex;
+            align-items: center;
+        }
+
+        /* NÚT BẤM */
+        .btns { display: flex; gap: 10px; margin-top: 5px; }
+        .main-btn {
+            flex: 1; height: 50px; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .paste { background: #81c784; }
+        .save { background: linear-gradient(#43a047, #2e7d32); }
+
+        /* BỘ LỌC */
+        .filter-container {
+            display: flex; justify-content: flex-end; align-items: center;
+            margin: 25px 0 10px; gap: 8px;
+        }
+        #sortSelect {
+            padding: 8px 12px; border-radius: 10px; border: 1px solid #a5d6a7;
+            background: #fff; color: #2e7d32; font-size: 13px; font-weight: 600;
+        }
+
+        /* DANH SÁCH SẢN PHẨM */
+        .item {
+            background: #fff; border-radius: 15px; padding: 15px;
+            margin-bottom: 12px; border-left: 6px solid #a5d6a7;
+            position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding-right: 50px;
+        }
+        .icon-btn {
+            position: absolute; right: 10px; width: 34px; height: 34px;
+            border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center;
+        }
+        .del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 18px; }
+        .copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
+
+        /* CẢNH BÁO */
+        .warn30 { border-left-color: #fbc02d; }
+        .w30 { color: #f9a825; font-weight: 700; }
+        .warn7 { border-left-color: #c62828; }
+        .w7 { color: #c62828; font-weight: 700; }
+        .expired { color: #b71c1c; font-weight: 900; text-transform: uppercase; }
+
+        .info-row { margin-bottom: 4px; line-height: 1.4; }
+        .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
+        .p-sku { color: #666; font-size: 12px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+        svg { width: 18px; height: 18px; fill: currentColor; }
+    </style>
 </head>
 <body>
 
 <div class="app">
     <h1>📅 KIỂM DATE</h1>
+
     <div class="input-group">
         <label>Mã SKU</label>
         <input id="sku" type="text" placeholder="Nhập hoặc dán mã..." autocomplete="off">
     </div>
+
     <div class="input-group">
         <label>Tên sản phẩm</label>
         <input id="name" type="text" placeholder="Tên tự hiện nếu đã lưu">
     </div>
+
     <div class="input-group">
         <label>Hạn sử dụng</label>
         <input id="hsd" type="date">
     </div>
+
     <div class="btns">
         <button class="main-btn paste" onclick="smartPaste()">📋 Dán mã</button>
         <button class="main-btn save" onclick="save()">💾 Lưu lại</button>
     </div>
+
     <div class="filter-container">
         <select id="sortSelect" onchange="render()">
             <option value="date-asc">Hạn dùng (Gần → Xa)</option>
@@ -91,17 +136,119 @@ svg { width: 18px; height: 18px; fill: currentColor; }
             <option value="name-desc">Tên (Z → A)</option>
         </select>
     </div>
+
     <div class="list" id="list"></div>
 </div>
 
 <script>
-// Đăng ký Service Worker cho PWA
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-}
+    // ĐĂNG KÝ SERVICE WORKER (PWA)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
 
-// Chèn toàn bộ Logic Javascript cũ của bạn vào đây (smartPaste, save, render...)
-// ... (Tôi lược bớt để file ngắn gọn, bạn copy logic từ bản trước vào đây nhé)
+    let data = JSON.parse(localStorage.getItem('dates')||'[]');
+    let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
+
+    const skuInput = document.getElementById('sku');
+    const nameInput = document.getElementById('name');
+    const hsdInput = document.getElementById('hsd');
+
+    // TỰ NHẬN DIỆN TÊN TỪ SKU
+    skuInput.addEventListener('input', () => {
+        const val = skuInput.value.trim();
+        if(skuMap[val]) nameInput.value = skuMap[val];
+    });
+
+    // DÁN THÔNG MINH CHO IPHONE
+    async function smartPaste() {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                skuInput.value = text.trim();
+                if (skuMap[text.trim()]) nameInput.value = skuMap[text.trim()];
+                hsdInput.focus();
+                try { hsdInput.showPicker(); } catch(e){}
+            }
+        } catch (e) {
+            skuInput.focus(); // iPhone sẽ hiện nút "Dán" ở bàn phím
+        }
+    }
+
+    // LƯU DỮ LIỆU
+    function save() {
+        if(!skuInput.value || !hsdInput.value) {
+            alert("⚠️ Vui lòng nhập đủ Mã SKU và Hạn dùng!");
+            return;
+        }
+        const fName = (nameInput.value || 'Sản phẩm mới').trim();
+        const fSku = skuInput.value.trim();
+
+        skuMap[fSku] = fName;
+        data.push({ sku: fSku, name: fName, hsd: hsdInput.value });
+        
+        localStorage.setItem('dates', JSON.stringify(data));
+        localStorage.setItem('skuMap', JSON.stringify(skuMap));
+
+        skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
+        render();
+        skuInput.focus();
+    }
+
+    function deleteItem(index) {
+        if(confirm("Xóa mục này?")) {
+            data.splice(index, 1);
+            localStorage.setItem('dates', JSON.stringify(data));
+            render();
+        }
+    }
+
+    function copyText(txt, btn) {
+        navigator.clipboard.writeText(txt).then(() => {
+            const oldH = btn.innerHTML;
+            btn.innerHTML = '✔';
+            setTimeout(() => { btn.innerHTML = oldH; }, 1000);
+        });
+    }
+
+    // HIỂN THỊ DANH SÁCH
+    function render() {
+        const listDiv = document.getElementById('list');
+        listDiv.innerHTML = '';
+        const sortMode = document.getElementById('sortSelect').value;
+
+        data.sort((a, b) => {
+            if (sortMode === 'date-asc') return new Date(a.hsd) - new Date(b.hsd);
+            if (sortMode === 'date-desc') return new Date(b.hsd) - new Date(a.hsd);
+            if (sortMode === 'name-asc') return a.name.localeCompare(b.name, 'vi');
+            if (sortMode === 'name-desc') return b.name.localeCompare(a.name, 'vi');
+        });
+
+        data.forEach((i, index) => {
+            const d = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
+            let cls = '', txt = `Còn ${d} ngày`, tcls = '';
+            
+            if (d < 0) { cls = 'warn7'; txt = `HẾT HẠN`; tcls = 'expired'; }
+            else if (d <= 7) { cls = 'warn7'; txt = `⚠️ Còn ${d} ngày`; tcls = 'w7'; }
+            else if (d <= 30) { cls = 'warn30'; txt = `⏰ Còn ${d} ngày`; tcls = 'w30'; }
+
+            const hsdF = i.hsd.split('-').reverse().join('/');
+            const copyIcon = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
+
+            listDiv.innerHTML += `
+            <div class="item ${cls}">
+                <div>
+                    <div class="info-row p-name">${i.name}</div>
+                    <div class="info-row"><span class="p-sku">${i.sku}</span></div>
+                    <div class="info-row" style="font-size:14px">HSD: <b>${hsdF}</b></div>
+                    <div class="info-row ${tcls}" style="margin-top:6px; font-size: 13px;">${txt}</div>
+                </div>
+                <button class="icon-btn del-btn" onclick="deleteItem(${index})">×</button>
+                <button class="icon-btn copy-btn" onclick="copyText('${i.sku}', this)">${copyIcon}</button>
+            </div>`;
+        });
+    }
+
+    render();
 </script>
 </body>
 </html>
