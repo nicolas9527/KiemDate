@@ -1,5 +1,5 @@
 {
-  "name": "Kiểm Date PWA",
+  "name": "Kiểm Date Pro",
   "short_name": "Kiểm Date",
   "start_url": "index.html",
   "display": "standalone",
@@ -7,9 +7,10 @@
   "theme_color": "#2e7d32",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
+      "src": "icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
