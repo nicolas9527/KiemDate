@@ -24,14 +24,40 @@ body {
 }
 h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
 
-/* --- FORM NHẬP LIỆU --- */
-label { color: #2e7d32; font-weight: 700; margin-bottom: 8px; display: block; font-size: 14px; }
-input {
-    width: 100%; height: 48px; font-size: 16px; border-radius: 12px;
-    border: 2px solid #a5d6a7; background: #fff; padding: 0 12px;
-    box-sizing: border-box; margin-bottom: 16px; outline: none;
+/* --- FORM NHẬP LIỆU (ĐÃ FIX CÂN BẰNG) --- */
+.input-group {
+    margin-bottom: 16px;
 }
-input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
+label { 
+    color: #2e7d32; 
+    font-weight: 700; 
+    margin-bottom: 6px; 
+    display: block; 
+    font-size: 14px; 
+}
+
+/* Đảm bảo tất cả input đều có cùng thông số */
+input[type="text"], 
+input[type="date"],
+input {
+    width: 100%;
+    height: 48px; /* Cố định chiều cao */
+    font-size: 16px;
+    border-radius: 12px;
+    border: 2px solid #a5d6a7;
+    background: #fff;
+    padding: 0 12px;
+    display: block;
+    box-sizing: border-box; /* Ép trình duyệt tính cả border vào height */
+    outline: none;
+    -webkit-appearance: none; /* Khử định dạng riêng của iOS */
+    appearance: none;
+}
+
+input:focus { 
+    border-color: #2e7d32; 
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); 
+}
 
 /* --- NÚT BẤM CHÍNH --- */
 .btns { display: flex; gap: 10px; margin-top: 5px; }
@@ -42,7 +68,7 @@ input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1
 .paste { background: #81c784; }
 .save { background: linear-gradient(#43a047, #2e7d32); }
 
-/* --- BỘ LỌC (GỌN GÀNG) --- */
+/* --- BỘ LỌC --- */
 .filter-container {
     display: flex;
     justify-content: flex-end;
@@ -60,11 +86,9 @@ input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1
     font-size: 13px;
     font-weight: 600;
     outline: none;
-    cursor: pointer;
 }
 
 /* --- DANH SÁCH SẢN PHẨM --- */
-.list { margin-top: 5px; }
 .item {
     background: #fff; border-radius: 15px; padding: 15px;
     margin-bottom: 12px; border-left: 6px solid #a5d6a7;
@@ -72,17 +96,15 @@ input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1
     padding-right: 50px;
 }
 
-/* --- ICON THAO TÁC BÊN PHẢI --- */
 .icon-btn {
     position: absolute; right: 10px;
     width: 34px; height: 34px;
     border-radius: 10px; border: none;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: 0.2s;
+    cursor: pointer;
 }
 .del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 20px; }
 .copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
-.copy-btn:active { background: #2e7d32; color: #fff; }
 
 /* --- TRẠNG THÁI CẢNH BÁO --- */
 .warn30 { border-left-color: #fbc02d; }
@@ -91,11 +113,9 @@ input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1
 .w7 { color: #c62828; font-weight: 700; }
 .expired { color: #b71c1c; font-weight: 900; text-transform: uppercase; }
 
-/* --- TEXT HIỂN THỊ --- */
 .info-row { margin-bottom: 4px; line-height: 1.4; }
 .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
 .p-sku { color: #666; font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-.p-date { color: #444; font-size: 14px; }
 svg { width: 18px; height: 18px; fill: currentColor; }
 </style>
 </head>
@@ -105,14 +125,20 @@ svg { width: 18px; height: 18px; fill: currentColor; }
 <div class="app">
   <h1>📅 KIỂM DATE</h1>
 
-  <label>Mã SKU</label>
-  <input id="sku" placeholder="Nhập mã SKU..." autofocus>
+  <div class="input-group">
+    <label>Mã SKU</label>
+    <input id="sku" type="text" placeholder="Nhập mã SKU..." autofocus>
+  </div>
 
-  <label>Tên sản phẩm</label>
-  <input id="name" placeholder="Tên sẽ tự hiện nếu đã lưu">
+  <div class="input-group">
+    <label>Tên sản phẩm</label>
+    <input id="name" type="text" placeholder="Tên sẽ tự hiện nếu đã lưu">
+  </div>
 
-  <label>Hạn sử dụng</label>
-  <input id="hsd" type="date">
+  <div class="input-group">
+    <label>Hạn sử dụng</label>
+    <input id="hsd" type="date">
+  </div>
 
   <div class="btns">
     <button class="main-btn paste" onclick="pasteSku()">📋 Dán mã</button>
@@ -139,9 +165,7 @@ let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
 const skuInput = document.getElementById('sku');
 const nameInput = document.getElementById('name');
 const hsdInput = document.getElementById('hsd');
-const sortSelect = document.getElementById('sortSelect');
 
-// Tự nhận diện tên khi gõ SKU
 skuInput.addEventListener('input', function() {
     const val = this.value.trim();
     if(skuMap[val]) nameInput.value = skuMap[val];
@@ -194,15 +218,13 @@ function copyText(txt, btn) {
 function render(){
   const listDiv = document.getElementById('list');
   listDiv.innerHTML = '';
-  
-  const sortMode = sortSelect.value;
+  const sortMode = document.getElementById('sortSelect').value;
 
-  // LOGIC SẮP XẾP MỚI (CHỈ TÊN VÀ NGÀY)
   data.sort((a, b) => {
     if (sortMode === 'date-asc') return new Date(a.hsd) - new Date(b.hsd);
     if (sortMode === 'date-desc') return new Date(b.hsd) - new Date(a.hsd);
-    if (sortMode === 'name-asc') return a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'});
-    if (sortMode === 'name-desc') return b.name.localeCompare(a.name, 'vi', {sensitivity: 'base'});
+    if (sortMode === 'name-asc') return a.name.localeCompare(b.name, 'vi');
+    if (sortMode === 'name-desc') return b.name.localeCompare(a.name, 'vi');
   });
 
   data.forEach((i, index) => {
@@ -221,7 +243,7 @@ function render(){
       <div>
         <div class="info-row p-name">${i.name}</div>
         <div class="info-row"><span class="p-sku">${i.sku}</span></div>
-        <div class="info-row p-date">HSD: <b>${hsdF}</b></div>
+        <div class="info-row" style="font-size:14px">HSD: <b>${hsdF}</b></div>
         <div class="info-row ${tcls}" style="margin-top:6px">${txt}</div>
       </div>
       <button class="icon-btn del-btn" onclick="deleteItem(${index})">×</button>
