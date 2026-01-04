@@ -26,12 +26,10 @@ h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; fo
 
 /* --- FORM NHẬP LIỆU --- */
 label { color: #2e7d32; font-weight: 700; margin-bottom: 8px; display: block; font-size: 14px; }
-
 input {
     width: 100%; height: 48px; font-size: 16px; border-radius: 12px;
     border: 2px solid #a5d6a7; background: #fff; padding: 0 12px;
     box-sizing: border-box; margin-bottom: 16px; outline: none;
-    -webkit-appearance: none;
 }
 input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
 
@@ -44,13 +42,34 @@ input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1
 .paste { background: #81c784; }
 .save { background: linear-gradient(#43a047, #2e7d32); }
 
+/* --- BỘ LỌC (GỌN GÀNG) --- */
+.filter-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 25px 0 10px;
+    gap: 8px;
+}
+.filter-label { font-size: 13px; color: #666; font-weight: bold; }
+#sortSelect {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #a5d6a7;
+    background: #fff;
+    color: #2e7d32;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+
 /* --- DANH SÁCH SẢN PHẨM --- */
-.list { margin-top: 25px; }
+.list { margin-top: 5px; }
 .item {
     background: #fff; border-radius: 15px; padding: 15px;
     margin-bottom: 12px; border-left: 6px solid #a5d6a7;
     position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    padding-right: 50px; /* Chừa chỗ cho icon bên phải */
+    padding-right: 50px;
 }
 
 /* --- ICON THAO TÁC BÊN PHẢI --- */
@@ -65,14 +84,14 @@ input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1
 .copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
 .copy-btn:active { background: #2e7d32; color: #fff; }
 
-/* --- CẢNH BÁO --- */
+/* --- TRẠNG THÁI CẢNH BÁO --- */
 .warn30 { border-left-color: #fbc02d; }
 .w30 { color: #f9a825; font-weight: 700; }
 .warn7 { border-left-color: #c62828; }
 .w7 { color: #c62828; font-weight: 700; }
 .expired { color: #b71c1c; font-weight: 900; text-transform: uppercase; }
 
-/* --- TEXT --- */
+/* --- TEXT HIỂN THỊ --- */
 .info-row { margin-bottom: 4px; line-height: 1.4; }
 .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
 .p-sku { color: #666; font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
@@ -100,6 +119,16 @@ svg { width: 18px; height: 18px; fill: currentColor; }
     <button class="main-btn save" onclick="save()">💾 Lưu lại</button>
   </div>
 
+  <div class="filter-container">
+    <span class="filter-label">Sắp xếp:</span>
+    <select id="sortSelect" onchange="render()">
+      <option value="date-asc">Hạn dùng (Gần → Xa)</option>
+      <option value="date-desc">Hạn dùng (Xa → Gần)</option>
+      <option value="name-asc">Tên (A → Z)</option>
+      <option value="name-desc">Tên (Z → A)</option>
+    </select>
+  </div>
+
   <div class="list" id="list"></div>
 </div>
 
@@ -110,6 +139,7 @@ let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
 const skuInput = document.getElementById('sku');
 const nameInput = document.getElementById('name');
 const hsdInput = document.getElementById('hsd');
+const sortSelect = document.getElementById('sortSelect');
 
 // Tự nhận diện tên khi gõ SKU
 skuInput.addEventListener('input', function() {
@@ -164,7 +194,16 @@ function copyText(txt, btn) {
 function render(){
   const listDiv = document.getElementById('list');
   listDiv.innerHTML = '';
-  data.sort((a,b) => new Date(a.hsd) - new Date(b.hsd));
+  
+  const sortMode = sortSelect.value;
+
+  // LOGIC SẮP XẾP MỚI (CHỈ TÊN VÀ NGÀY)
+  data.sort((a, b) => {
+    if (sortMode === 'date-asc') return new Date(a.hsd) - new Date(b.hsd);
+    if (sortMode === 'date-desc') return new Date(b.hsd) - new Date(a.hsd);
+    if (sortMode === 'name-asc') return a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'});
+    if (sortMode === 'name-desc') return b.name.localeCompare(a.name, 'vi', {sensitivity: 'base'});
+  });
 
   data.forEach((i, index) => {
     const d = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
