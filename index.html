@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>KIỂM DATE v2</title>
+<title>KIỂM DATE</title>
 
 <style>
-/* --- CẤU HÌNH CƠ BẢN --- */
+/* --- CẤU HÌNH GIAO DIỆN --- */
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     background: #eaf4e6;
     padding: 14px;
     color: #333;
 }
 .app {
     background: #f4faee;
-    border-radius: 20px;
+    border-radius: 22px;
     padding: 20px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     max-width: 500px;
     margin: 0 auto;
 }
-h1 { text-align: center; color: #2e7d32; margin: 0 0 20px 0; font-size: 24px; font-weight: 800; }
+h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
 
-/* --- FORM NHẬP LIỆU (ĐỒNG BỘ KÍCH THƯỚC) --- */
+/* --- FORM NHẬP LIỆU --- */
 label { color: #2e7d32; font-weight: 700; margin-bottom: 8px; display: block; font-size: 14px; }
 
 input {
@@ -35,77 +35,59 @@ input {
 }
 input:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
 
-/* --- BUTTONS --- */
+/* --- NÚT BẤM CHÍNH --- */
 .btns { display: flex; gap: 10px; margin-top: 5px; }
-button.main-btn {
+.main-btn {
     flex: 1; height: 48px; border: none; border-radius: 12px;
     font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
 }
-button.main-btn:active { opacity: 0.8; }
-.paste { background: #66bb6a; }
-.save { background: #2e7d32; }
+.paste { background: #81c784; }
+.save { background: linear-gradient(#43a047, #2e7d32); }
 
-/* --- DANH SÁCH ITEM --- */
+/* --- DANH SÁCH SẢN PHẨM --- */
 .list { margin-top: 25px; }
-
 .item {
-    background: #fff; border-radius: 12px; padding: 15px;
+    background: #fff; border-radius: 15px; padding: 15px;
     margin-bottom: 12px; border-left: 6px solid #a5d6a7;
-    position: relative; /* Để căn chỉnh nút absolute */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    min-height: 80px;
-    padding-right: 50px; /* Chừa chỗ cho cột nút bấm bên phải */
+    position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding-right: 50px; /* Chừa chỗ cho icon bên phải */
 }
 
-/* --- CÁC NÚT ICON BÊN PHẢI --- */
+/* --- ICON THAO TÁC BÊN PHẢI --- */
 .icon-btn {
     position: absolute; right: 10px;
-    width: 32px; height: 32px;
-    border-radius: 8px; border: none;
+    width: 34px; height: 34px;
+    border-radius: 10px; border: none;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 18px;
-    transition: background 0.2s;
+    cursor: pointer; transition: 0.2s;
 }
-
-/* Nút xóa (Góc trên phải) */
-.del-btn {
-    top: 10px;
-    background: #ffebee; color: #d32f2f;
-}
-
-/* Nút Copy (Góc dưới phải) */
-.copy-btn {
-    bottom: 10px;
-    background: #e8f5e9; color: #2e7d32;
-}
+.del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 20px; }
+.copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
 .copy-btn:active { background: #2e7d32; color: #fff; }
 
-/* --- TRẠNG THÁI CẢNH BÁO --- */
+/* --- CẢNH BÁO --- */
 .warn30 { border-left-color: #fbc02d; }
 .w30 { color: #f9a825; font-weight: 700; }
 .warn7 { border-left-color: #c62828; }
 .w7 { color: #c62828; font-weight: 700; }
-.expired { color: #b71c1c; font-weight: 800; text-transform: uppercase; }
+.expired { color: #b71c1c; font-weight: 900; text-transform: uppercase; }
 
-/* --- TEXT INFO --- */
+/* --- TEXT --- */
 .info-row { margin-bottom: 4px; line-height: 1.4; }
-.p-name { font-size: 16px; color: #1b5e20; font-weight: 700; }
-.p-sku { color: #555; font-size: 13px; font-family: monospace; background: #f5f5f5; padding: 2px 5px; border-radius: 4px;}
-.p-date { color: #555; font-size: 14px; }
-
-/* SVG Icon */
+.p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
+.p-sku { color: #666; font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+.p-date { color: #444; font-size: 14px; }
 svg { width: 18px; height: 18px; fill: currentColor; }
-
 </style>
 </head>
 
 <body>
 
 <div class="app">
-  <h1>📅 KIỂM DATE PRO</h1>
+  <h1>📅 KIỂM DATE</h1>
 
   <label>Mã SKU</label>
-  <input id="sku" placeholder="Nhập hoặc quét mã SKU..." autofocus>
+  <input id="sku" placeholder="Nhập mã SKU..." autofocus>
 
   <label>Tên sản phẩm</label>
   <input id="name" placeholder="Tên sẽ tự hiện nếu đã lưu">
@@ -114,15 +96,14 @@ svg { width: 18px; height: 18px; fill: currentColor; }
   <input id="hsd" type="date">
 
   <div class="btns">
-    <button class="main-btn paste" onclick="pasteSku()">📋 Dán</button>
-    <button class="main-btn save" onclick="save()">💾 Lưu</button>
+    <button class="main-btn paste" onclick="pasteSku()">📋 Dán mã</button>
+    <button class="main-btn save" onclick="save()">💾 Lưu lại</button>
   </div>
 
   <div class="list" id="list"></div>
 </div>
 
 <script>
-// --- LOGIC GIỮ NGUYÊN ---
 let data = JSON.parse(localStorage.getItem('dates')||'[]');
 let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
 
@@ -130,6 +111,7 @@ const skuInput = document.getElementById('sku');
 const nameInput = document.getElementById('name');
 const hsdInput = document.getElementById('hsd');
 
+// Tự nhận diện tên khi gõ SKU
 skuInput.addEventListener('input', function() {
     const val = this.value.trim();
     if(skuMap[val]) nameInput.value = skuMap[val];
@@ -141,21 +123,22 @@ function pasteSku(){
     skuInput.value = clipped;
     if(skuMap[clipped]) nameInput.value = skuMap[clipped];
     hsdInput.focus();
-    try { hsdInput.showPicker(); } catch(e){} 
+    try { hsdInput.showPicker(); } catch(e){}
   });
 }
 
 function save(){
   if(!skuInput.value || !hsdInput.value) {
-      alert("⚠️ Thiếu SKU hoặc Hạn sử dụng!"); return;
+      alert("⚠️ Vui lòng điền SKU và Hạn dùng!"); return;
   }
-  const finalName = (nameInput.value || 'Sản phẩm chưa tên').trim();
+  const finalName = (nameInput.value || 'Sản phẩm không tên').trim();
   const finalSku = skuInput.value.trim();
 
-  skuMap[finalSku] = finalName; // Update map
-  
+  skuMap[finalSku] = finalName;
   data.push({ sku: finalSku, name: finalName, hsd: hsdInput.value });
-  saveToStorage();
+  
+  localStorage.setItem('dates', JSON.stringify(data));
+  localStorage.setItem('skuMap', JSON.stringify(skuMap));
 
   skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
   render();
@@ -163,56 +146,35 @@ function save(){
 }
 
 function deleteItem(index) {
-    if(confirm("Xóa dòng này?")) {
+    if(confirm("Xóa sản phẩm này?")) {
         data.splice(index, 1);
-        saveToStorage();
+        localStorage.setItem('dates', JSON.stringify(data));
         render();
     }
 }
 
-function saveToStorage(){
-    localStorage.setItem('dates', JSON.stringify(data));
-    localStorage.setItem('skuMap', JSON.stringify(skuMap));
-}
-
-function daysLeft(d){
-  return Math.ceil((new Date(d+'T23:59:59') - Date.now()) / 86400000);
-}
-
-// --- HÀM COPY MỚI ---
 function copyText(txt, btn) {
     navigator.clipboard.writeText(txt).then(() => {
-        // Hiệu ứng visual báo đã copy
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '✔'; // Đổi icon thành dấu tick
-        btn.style.background = '#2e7d32';
-        btn.style.color = '#fff';
-        
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.style.background = '#e8f5e9';
-            btn.style.color = '#2e7d32';
-        }, 1000);
+        const oldH = btn.innerHTML;
+        btn.innerHTML = '✔';
+        setTimeout(() => { btn.innerHTML = oldH; }, 1000);
     });
 }
 
-// --- RENDER GIAO DIỆN ---
 function render(){
   const listDiv = document.getElementById('list');
   listDiv.innerHTML = '';
   data.sort((a,b) => new Date(a.hsd) - new Date(b.hsd));
 
   data.forEach((i, index) => {
-    const d = daysLeft(i.hsd);
+    const d = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
     let cls = '', txt = `Còn ${d} ngày`, tcls = '';
     
     if (d < 0) { cls = 'warn7'; txt = `HẾT HẠN (${Math.abs(d)} ngày)`; tcls = 'expired'; }
-    else if (d <= 7) { cls = 'warn7'; txt = `GẤP: Còn ${d} ngày`; tcls = 'w7'; }
-    else if (d <= 30) { cls = 'warn30'; txt = `Còn ${d} ngày`; tcls = 'w30'; }
+    else if (d <= 7) { cls = 'warn7'; txt = `⚠️ Sắp hết: Còn ${d} ngày`; tcls = 'w7'; }
+    else if (d <= 30) { cls = 'warn30'; txt = `⏰ Chú ý: Còn ${d} ngày`; tcls = 'w30'; }
 
-    const hsdFormatted = i.hsd.split('-').reverse().join('/');
-
-    // Icon Copy (SVG)
+    const hsdF = i.hsd.split('-').reverse().join('/');
     const copyIcon = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
 
     listDiv.innerHTML += `
@@ -220,10 +182,9 @@ function render(){
       <div>
         <div class="info-row p-name">${i.name}</div>
         <div class="info-row"><span class="p-sku">${i.sku}</span></div>
-        <div class="info-row p-date">HSD: ${hsdFormatted}</div>
-        <div class="info-row ${tcls}" style="margin-top:4px">${txt}</div>
+        <div class="info-row p-date">HSD: <b>${hsdF}</b></div>
+        <div class="info-row ${tcls}" style="margin-top:6px">${txt}</div>
       </div>
-
       <button class="icon-btn del-btn" onclick="deleteItem(${index})">×</button>
       <button class="icon-btn copy-btn" onclick="copyText('${i.sku}', this)">${copyIcon}</button>
     </div>`;
