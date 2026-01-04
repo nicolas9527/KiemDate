@@ -3,181 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2e7d32">
 
 <title>Kiểm Date</title>
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Kiểm Date">
-<meta name="theme-color" content="#1565c0">
 
 <style>
 body{
   font-family:-apple-system,BlinkMacSystemFont,Arial;
-  background:#f2f6fb;
-  margin:0;
-  padding:14px;
+  background:linear-gradient(#eef7ee,#e3f2e1);
+  margin:0;padding:12px;
 }
-.app{
+.container{
   background:#fff;
   border-radius:18px;
-  padding:16px;
-  box-shadow:0 10px 24px rgba(0,0,0,.08);
+  padding:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
-h2{
-  text-align:center;
-  margin:0 0 14px;
-  color:#1565c0;
-}
-label{
-  font-size:14px;
-  color:#333;
-}
+h2{text-align:center;color:#2e7d32;margin:6px 0 14px}
+
+label{font-weight:600;color:#2e7d32}
 input{
-  width:100%;
-  height:40px;
+  width:100%;height:40px;
   font-size:16px;
   margin:6px 0 12px;
-  padding:0 10px;
   border-radius:10px;
-  border:1.5px solid #cfd8dc;
+  border:1.5px solid #a5d6a7;
+  background:#f1f8e9;
+  padding:0 10px;
 }
+
 button{
-  width:100%;
-  height:44px;
+  width:100%;height:44px;
+  background:linear-gradient(#43a047,#2e7d32);
+  color:#fff;
   border:none;
   border-radius:12px;
-  background:#1565c0;
-  color:#fff;
-  font-size:16px;
-  margin-bottom:10px;
+  font-size:17px;
 }
+
 .list{
-  margin-top:18px;
+  margin-top:14px;
 }
 .item{
-  padding:10px 0;
-  border-bottom:1px dashed #e0e0e0;
+  background:#f1f8e9;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+  font-size:15px;
 }
-.expire-soon{color:#ef6c00;}
-.expired{color:#c62828;}
-.small{font-size:13px;color:#666}
+.expired{color:#c62828;font-weight:600}
 </style>
 </head>
 
 <body>
-<div class="app">
-<h2>🗓️ KIỂM DATE</h2>
+<div class="container">
+<h2>📆 KIỂM DATE</h2>
 
-<label>Tên sản phẩm</label>
-<input id="name" placeholder="VD: Sữa tươi">
+<label>SKU (chạm để dán)</label>
+<input id="sku" placeholder="Chạm để dán SKU" onclick="pasteSKU()">
 
-<label>Mã / SKU</label>
-<input id="sku" placeholder="Quét hoặc nhập mã">
-<button style="background:#2e7d32" onclick="startScan()">📷 Quét QR</button>
+<label>Hạn sử dụng</label>
+<input type="date" id="date">
 
-<label>Ngày hết hạn</label>
-<input type="date" id="expire">
-
-<button onclick="saveItem()">➕ Lưu sản phẩm</button>
-
-<div id="qrBox" style="display:none;margin-top:10px">
-  <div id="reader" style="width:100%"></div>
-  <button style="background:#c62828" onclick="stopScan()">✖ Đóng camera</button>
-</div>
+<button onclick="saveItem()">Lưu sản phẩm</button>
 
 <div class="list" id="list"></div>
 </div>
 
-<!-- QR library -->
-<script src="https://unpkg.com/html5-qrcode"></script>
-
 <script>
-let db, qr;
-
-// ===== IndexedDB =====
-function openDB(){
-  return new Promise((res,rej)=>{
-    const req = indexedDB.open('kiem-date-db',1);
-    req.onupgradeneeded = e=>{
-      db = e.target.result;
-      const store = db.createObjectStore('items',{keyPath:'id',autoIncrement:true});
-      store.createIndex('expire','expire');
-    };
-    req.onsuccess = e=>{ db=e.target.result; res(); };
-    req.onerror = ()=>rej();
-  });
+/* ===== CLIPBOARD ===== */
+async function pasteSKU(){
+  try{
+    const text = await navigator.clipboard.readText();
+    if(text) sku.value = text.trim();
+  }catch{
+    alert('Không đọc được clipboard');
+  }
 }
 
-function saveItem(){
-  const nameEl = document.getElementById('name');
-  const skuEl = document.getElementById('sku');
-  const expEl = document.getElementById('expire');
+/* ===== INDEXED DB ===== */
+let db;
+const req = indexedDB.open('kiemdateDB',1);
 
-  if(!nameEl.value || !expEl.value){
-    alert('Nhập tên và ngày hết hạn');
-    return;
-  }
+req.onupgradeneeded = e=>{
+  db = e.target.result;
+  db.createObjectStore('items',{keyPath:'id',autoIncrement:true});
+};
+
+req.onsuccess = e=>{
+  db = e.target.result;
+  loadList();
+};
+
+function saveItem(){
+  if(!sku.value || !date.value) return;
 
   const tx = db.transaction('items','readwrite');
   tx.objectStore('items').add({
-    name: nameEl.value.trim(),
-    sku: skuEl.value.trim(),
-    expire: expEl.value,
-    created: new Date().toISOString()
+    sku: sku.value,
+    date: date.value,
+    time: Date.now()
   });
 
-  nameEl.value = skuEl.value = expEl.value = '';
-  setTimeout(loadItems,200);
+  sku.value=''; date.value='';
+  tx.oncomplete = loadList;
 }
 
-function loadItems(){
+function loadList(){
   const tx = db.transaction('items','readonly');
-  const req = tx.objectStore('items').getAll();
-  req.onsuccess = ()=>{
-    const now = new Date();
-    list.innerHTML='';
-    req.result.forEach(it=>{
-      const d = new Date(it.expire);
-      const diff = Math.ceil((d-now)/86400000);
-      let cls='', txt=`Còn ${diff} ngày`;
-      if(diff<0){cls='expired';txt='Đã hết hạn';}
-      else if(diff<=7){cls='expire-soon';}
+  const store = tx.objectStore('items');
+  const req = store.getAll();
 
-      list.innerHTML+=`
-        <div class="item ${cls}">
-          <b>${it.name}</b><br>
-          <span class="small">HSD: ${it.expire} – ${txt}</span>
-        </div>`;
-    });
+  req.onsuccess = ()=>{
+    list.innerHTML='';
+    const today = new Date().toISOString().slice(0,10);
+
+    req.result
+      .sort((a,b)=>b.time-a.time)
+      .forEach(it=>{
+        const exp = it.date < today;
+        list.innerHTML += `
+          <div class="item ${exp?'expired':''}">
+            SKU: <b>${it.sku}</b><br>
+            HSD: ${it.date} ${exp?'⚠️ Hết hạn':''}
+          </div>
+        `;
+      });
   };
 }
-
-// ===== QR Scan =====
-function startScan(){
-  document.getElementById('qrBox').style.display='block';
-  qr = new Html5Qrcode("reader");
-  qr.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
-    txt=>{
-      document.getElementById('sku').value = txt;
-      stopScan();
-    }
-  );
-}
-
-function stopScan(){
-  if(qr){
-    qr.stop().then(()=>qr.clear());
-  }
-  document.getElementById('qrBox').style.display='none';
-}
-
-// init
-openDB().then(loadItems);
 </script>
 </body>
 </html>
