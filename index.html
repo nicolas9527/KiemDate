@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<title>Kiểm Date</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kiểm Date">
+<meta name="theme-color" content="#1565c0">
+
+<style>
+body{
+  font-family:-apple-system,BlinkMacSystemFont,Arial;
+  background:#f2f6fb;
+  margin:0;
+  padding:14px;
+}
+.app{
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
+}
+h2{
+  text-align:center;
+  margin:0 0 14px;
+  color:#1565c0;
+}
+label{
+  font-size:14px;
+  color:#333;
+}
+input{
+  width:100%;
+  height:40px;
+  font-size:16px;
+  margin:6px 0 12px;
+  padding:0 10px;
+  border-radius:10px;
+  border:1.5px solid #cfd8dc;
+}
+button{
+  width:100%;
+  height:44px;
+  border:none;
+  border-radius:12px;
+  background:#1565c0;
+  color:#fff;
+  font-size:16px;
+}
+.list{
+  margin-top:18px;
+}
+.item{
+  padding:10px 0;
+  border-bottom:1px dashed #e0e0e0;
+}
+.expire-soon{color:#ef6c00;}
+.expired{color:#c62828;}
+</style>
+</head>
+
+<body>
+<div class="app">
+<h2>🗓️ KIỂM DATE</h2>
+
+<label>Tên sản phẩm</label>
+<input id="name" placeholder="VD: Sữa tươi">
+
+<label>Mã / SKU (tuỳ chọn)</label>
+<input id="sku" placeholder="QR / mã sản phẩm">
+
+<label>Ngày hết hạn</label>
+<input type="date" id="expire">
+
+<button onclick="saveItem()">➕ Lưu sản phẩm</button>
+
+<div class="list" id="list"></div>
+</div>
+
+<script>
+let db;
+
+// === IndexedDB ===
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req = indexedDB.open('kiem-date-db',1);
+    req.onupgradeneeded = e=>{
+      db = e.target.result;
+      const store = db.createObjectStore('items',{keyPath:'id',autoIncrement:true});
+      store.createIndex('expire','expire');
+    };
+    req.onsuccess = e=>{ db=e.target.result; res(); };
+    req.onerror = ()=>rej();
+  });
+}
+
+function saveItem(){
+  const name = document.getElementById('name').value.trim();
+  const sku = document.getElementById('sku').value.trim();
+  const expire = document.getElementById('expire').value;
+  if(!name || !expire) return alert('Nhập đủ thông tin');
+
+  const tx = db.transaction('items','readwrite');
+  tx.objectStore('items').add({
+    name, sku, expire,
+    created: new Date().toISOString()
+  });
+
+  name.value = sku.value = expire.value = '';
+  setTimeout(loadItems,200);
+}
+
+function loadItems(){
+  const tx = db.transaction('items','readonly');
+  const req = tx.objectStore('items').getAll();
+  req.onsuccess = ()=>{
+    const now = new Date();
+    list.innerHTML = '';
+    req.result.forEach(it=>{
+      const d = new Date(it.expire);
+      const diff = Math.ceil((d-now)/86400000);
+      let cls='', txt=`Còn ${diff} ngày`;
+      if(diff<0){cls='expired';txt='Đã hết hạn';}
+      else if(diff<=7){cls='expire-soon';}
+
+      list.innerHTML += `
+        <div class="item ${cls}">
+          <b>${it.name}</b><br>
+          HSD: ${it.expire} – ${txt}
+        </div>`;
+    });
+  };
+}
+
+// init
+openDB().then(loadItems);
+</script>
+</body>
+</html>
