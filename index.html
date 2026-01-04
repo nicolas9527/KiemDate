@@ -9,13 +9,14 @@
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#eaf4e6;padding:14px}
 .app{background:#f4faee;border-radius:22px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
 h1{text-align:center;color:#2e7d32;margin:6px 0 18px;font-size:22px}
-label{color:#2e7d32;font-weight:600;display:block;margin-bottom:6px}
+
+label{color:#2e7d32;font-weight:600;margin-bottom:6px;display:block}
 input{
   width:100%;height:44px;font-size:16px;border-radius:12px;
   border:2px solid #a5d6a7;background:#fff;padding:0 12px;
-  box-sizing:border-box;appearance:none;-webkit-appearance:none;
-  line-height:44px;margin-bottom:14px
+  box-sizing:border-box;margin-bottom:14px
 }
+
 .btns{display:flex;gap:12px}
 button{
   flex:1;height:46px;border:none;border-radius:14px;
@@ -23,6 +24,7 @@ button{
 }
 .paste{background:#81c784}
 .save{background:linear-gradient(#43a047,#2e7d32)}
+
 .list{margin-top:20px}
 .item{
   background:#fff;border-radius:16px;padding:12px;
@@ -30,13 +32,13 @@ button{
 }
 .warn30{border-left-color:#fbc02d}
 .warn7{border-left-color:#c62828}
+
 .copy{
   margin-top:8px;background:#e8f5e9;border:none;border-radius:10px;
   padding:6px 10px;color:#2e7d32
 }
-.days{font-weight:700}
-.w30{color:#f9a825}
-.w7{color:#c62828}
+.w30{color:#f9a825;font-weight:700}
+.w7{color:#c62828;font-weight:700}
 </style>
 </head>
 
@@ -81,7 +83,7 @@ function save(){
     hsd:hsd.value
   };
 
-  if(item.name && item.name!=='—') skuMap[item.sku]=item.name;
+  if(item.name!=='—') skuMap[item.sku]=item.name;
 
   data.push(item);
   localStorage.setItem('dates',JSON.stringify(data));
@@ -97,24 +99,32 @@ function daysLeft(d){
 
 function render(){
   list.innerHTML='';
-  data.sort((a,b)=>new Date(a.hsd)-new Date(b.hsd)).forEach(i=>{
-    if(!i.name||i.name==='—') i.name = skuMap[i.sku] || '—';
+  let changed=false;
 
-    const d = daysLeft(i.hsd);
-    let cls='', dcls='', txt=`Còn ${d} ngày`;
-    if(d<=7){cls='warn7';dcls='w7';txt=`⚠️ Còn ${d} ngày`}
-    else if(d<=30){cls='warn30';dcls='w30';txt=`⏰ Còn ${d} ngày`}
+  data.sort((a,b)=>new Date(a.hsd)-new Date(b.hsd)).forEach(i=>{
+    if((!i.name||i.name==='—') && skuMap[i.sku]){
+      i.name=skuMap[i.sku];
+      changed=true;
+    }
+
+    const d=daysLeft(i.hsd);
+    let cls='', txt=`Còn ${d} ngày`, tcls='';
+    if(d<=7){cls='warn7';txt=`⚠️ Còn ${d} ngày`;tcls='w7'}
+    else if(d<=30){cls='warn30';txt=`⏰ Còn ${d} ngày`;tcls='w30'}
 
     list.innerHTML+=`
     <div class="item ${cls}">
-      <b>${i.name}</b><br>
+      <b>${i.name||'—'}</b><br>
       SKU: ${i.sku}<br>
       HSD: ${i.hsd.split('-').reverse().join('-')}<br>
-      <span class="days ${dcls}">${txt}</span><br>
+      <span class="${tcls}">${txt}</span><br>
       <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy SKU</button>
     </div>`;
   });
+
+  if(changed) localStorage.setItem('dates',JSON.stringify(data));
 }
+
 render();
 </script>
 </body>
