@@ -2,67 +2,165 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KIỂM DATE - UPDATED</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>KIỂM DATE PRO</title>
 
 <style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#eaf4e6;padding:14px}
-.app{background:#f4faee;border-radius:22px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,.08); max-width: 500px; margin: auto;}
-h1{text-align:center;color:#2e7d32;margin:6px 0 18px;font-size:22px}
-
-label{color:#2e7d32;font-weight:600;margin-bottom:6px;display:block}
-input{
-  width:100%;height:44px;font-size:16px;border-radius:12px;
-  border:2px solid #a5d6a7;background:#fff;padding:0 12px;
-  box-sizing:border-box;margin-bottom:14px
+/* CẤU HÌNH GIAO DIỆN CHUNG */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #eaf4e6;
+    padding: 14px;
+    color: #333;
 }
 
-.btns{display:flex;gap:12px}
-button{
-  flex:1;height:46px;border:none;border-radius:14px;
-  font-size:16px;font-weight:600;color:#fff;cursor:pointer
+.app {
+    background: #f4faee;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    max-width: 500px;
+    margin: 0 auto;
 }
-.paste{background:#81c784}
-.save{background:linear-gradient(#43a047,#2e7d32)}
 
-.list{margin-top:20px}
-.item{
-  background:#fff;border-radius:16px;padding:12px;
-  margin-bottom:10px;border-left:6px solid #a5d6a7;
-  position: relative;
+h1 {
+    text-align: center;
+    color: #2e7d32;
+    margin: 0 0 20px 0;
+    font-size: 24px;
+    font-weight: 800;
 }
-.warn30{border-left-color:#fbc02d}
-.warn7{border-left-color:#c62828}
 
-.copy{
-  margin-top:8px;background:#e8f5e9;border:none;border-radius:10px;
-  padding:6px 10px;color:#2e7d32; font-size: 12px;
+/* ĐỊNH DẠNG FORM NHẬP LIỆU ĐỒNG BỘ */
+label {
+    color: #2e7d32;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 14px;
 }
-.del-btn{
-  position: absolute; top: 10px; right: 10px; 
-  background: none; border: none; color: #ccc; font-size: 18px;
+
+/* Css chung cho cả 3 ô nhập để kích thước bằng nhau tuyệt đối */
+input {
+    width: 100%;
+    height: 48px; /* Chiều cao đồng bộ */
+    font-size: 16px;
+    border-radius: 12px;
+    border: 2px solid #a5d6a7;
+    background: #fff;
+    padding: 0 12px;
+    box-sizing: border-box; /* Quan trọng để không bị lệch size */
+    margin-bottom: 16px;
+    outline: none;
+    -webkit-appearance: none; /* Fix lỗi hiển thị trên iPhone */
 }
-.w30{color:#f9a825;font-weight:700}
-.w7{color:#c62828;font-weight:700}
-.expired{color:#b71c1c; font-weight: 800; text-transform: uppercase;}
+
+input:focus {
+    border-color: #2e7d32;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+/* CẤU HÌNH NÚT BẤM */
+.btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+button {
+    flex: 1;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+button:active { opacity: 0.8; }
+
+.paste { background: #66bb6a; }
+.save { background: #2e7d32; }
+
+/* DANH SÁCH SẢN PHẨM */
+.list { margin-top: 25px; }
+
+.item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-left: 6px solid #a5d6a7;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Nút xóa item */
+.del-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ffebee;
+    color: #d32f2f;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    padding: 0;
+    flex: none;
+}
+
+/* Nút copy nhỏ */
+.copy {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    padding: 6px 12px;
+    margin-top: 10px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: 13px;
+    border-radius: 8px;
+    flex: none;
+}
+
+/* Các trạng thái cảnh báo */
+.warn30 { border-left-color: #fbc02d; }
+.w30 { color: #f9a825; font-weight: 700; }
+
+.warn7 { border-left-color: #c62828; }
+.w7 { color: #c62828; font-weight: 700; }
+.expired { color: #b71c1c; font-weight: 800; text-transform: uppercase; }
+
+/* Thông tin text */
+.info-row { margin-bottom: 4px; }
+.p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
+.p-sub { color: #555; font-size: 14px; }
 </style>
 </head>
 
 <body>
+
 <div class="app">
   <h1>📅 KIỂM DATE</h1>
 
-  <label>Tên sản phẩm</label>
-  <input id="name" placeholder="Nhập tên sản phẩm">
-
   <label>Mã SKU</label>
-  <input id="sku" placeholder="Nhập hoặc dán mã">
+  <input id="sku" placeholder="Nhập hoặc quét mã SKU..." autofocus>
+
+  <label>Tên sản phẩm</label>
+  <input id="name" placeholder="Tên sẽ tự hiện nếu đã lưu trước đó">
 
   <label>Hạn sử dụng</label>
   <input id="hsd" type="date">
 
   <div class="btns">
-    <button class="paste" onclick="pasteSku()">📋 Dán mã</button>
+    <button class="paste" onclick="pasteSku()">📋 Dán</button>
     <button class="save" onclick="save()">💾 Lưu</button>
   </div>
 
@@ -70,31 +168,46 @@ button{
 </div>
 
 <script>
+// --- KHỞI TẠO DỮ LIỆU ---
 let data = JSON.parse(localStorage.getItem('dates')||'[]');
 let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
 
-// Hàm dán mã và tự điền tên nếu đã từng lưu SKU này
+const skuInput = document.getElementById('sku');
+const nameInput = document.getElementById('name');
+const hsdInput = document.getElementById('hsd');
+
+// --- TỰ ĐỘNG ĐIỀN TÊN KHI NHẬP SKU ---
+skuInput.addEventListener('input', function() {
+    const val = this.value.trim();
+    if(skuMap[val]) {
+        nameInput.value = skuMap[val];
+    }
+});
+
+// --- CHỨC NĂNG DÁN MÃ ---
 function pasteSku(){
   navigator.clipboard.readText().then(t=>{
     const clipped = t.trim();
-    document.getElementById('sku').value = clipped;
+    skuInput.value = clipped;
     if(skuMap[clipped]) {
-        document.getElementById('name').value = skuMap[clipped];
+        nameInput.value = skuMap[clipped];
     }
+    // Sau khi dán thì trỏ chuột vào ô ngày để chọn cho lẹ
+    hsdInput.focus();
+    
+    // Nếu trên điện thoại, tự động mở hộp thoại chọn ngày (tuỳ trình duyệt)
+    try { hsdInput.showPicker(); } catch(e){} 
   });
 }
 
+// --- CHỨC NĂNG LƯU ---
 function save(){
-  const nameInput = document.getElementById('name');
-  const skuInput = document.getElementById('sku');
-  const hsdInput = document.getElementById('hsd');
-
   if(!skuInput.value || !hsdInput.value) {
-      alert("Vui lòng nhập đủ SKU và Hạn sử dụng!");
+      alert("⚠️ Vui lòng nhập SKU và Hạn sử dụng!");
       return;
   }
 
-  const finalName = (nameInput.value || 'Sản phẩm không tên').trim();
+  const finalName = (nameInput.value || 'Sản phẩm chưa tên').trim();
   const finalSku = skuInput.value.trim();
 
   const item = {
@@ -103,37 +216,47 @@ function save(){
     hsd: hsdInput.value
   };
 
-  // Cập nhật bản đồ SKU để lần sau tự gợi ý tên này
+  // Lưu tên vào bộ nhớ tạm để lần sau tự gợi ý
   skuMap[finalSku] = finalName;
 
   data.push(item);
-  localStorage.setItem('dates', JSON.stringify(data));
-  localStorage.setItem('skuMap', JSON.stringify(skuMap));
+  saveToStorage();
 
-  // Xóa form sau khi lưu
+  // Reset form
   skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
   render();
+  
+  // Đưa con trỏ về ô SKU để nhập tiếp món sau
+  skuInput.focus();
 }
 
+// --- CHỨC NĂNG XÓA ---
 function deleteItem(index) {
-    if(confirm("Xóa dòng này?")) {
+    if(confirm("Bạn muốn xóa dòng này?")) {
         data.splice(index, 1);
-        localStorage.setItem('dates', JSON.stringify(data));
+        saveToStorage();
         render();
     }
 }
 
+function saveToStorage(){
+    localStorage.setItem('dates', JSON.stringify(data));
+    localStorage.setItem('skuMap', JSON.stringify(skuMap));
+}
+
+// --- TÍNH TOÁN NGÀY ---
 function daysLeft(d){
-  // Tính toán dựa trên mốc cuối ngày để chính xác hơn
+  // Tính đến cuối ngày của hạn sử dụng
   const diff = Math.ceil((new Date(d+'T23:59:59') - Date.now()) / 86400000);
   return diff;
 }
 
+// --- HIỂN THỊ DANH SÁCH ---
 function render(){
   const listDiv = document.getElementById('list');
   listDiv.innerHTML = '';
 
-  // Sắp xếp theo ngày gần hết hạn nhất lên đầu
+  // Sắp xếp: Hết hạn -> Gần hết hạn -> Còn xa
   data.sort((a,b) => new Date(a.hsd) - new Date(b.hsd));
 
   data.forEach((i, index) => {
@@ -141,32 +264,40 @@ function render(){
     let cls = '', txt = `Còn ${d} ngày`, tcls = '';
     
     if (d < 0) {
-        cls = 'warn7';
-        txt = `❌ ĐÃ HẾT HẠN (${Math.abs(d)} ngày)`;
+        cls = 'warn7'; 
+        txt = `❌ ĐÃ HẾT HẠN (${Math.abs(d)} ngày)`; 
         tcls = 'expired';
     } else if (d <= 7) {
-        cls = 'warn7';
-        txt = `⚠️ Còn ${d} ngày (Gấp)`;
+        cls = 'warn7'; 
+        txt = `⚠️ GẤP: Còn ${d} ngày`; 
         tcls = 'w7';
     } else if (d <= 30) {
-        cls = 'warn30';
-        txt = `⏰ Còn ${d} ngày`;
+        cls = 'warn30'; 
+        txt = `⏰ Chú ý: Còn ${d} ngày`; 
         tcls = 'w30';
     }
+
+    // Format ngày cho đẹp (dd/mm/yyyy)
+    const hsdFormatted = i.hsd.split('-').reverse().join('/');
 
     listDiv.innerHTML += `
     <div class="item ${cls}">
       <button class="del-btn" onclick="deleteItem(${index})">×</button>
-      <b>${i.name}</b><br>
-      <small>SKU: ${i.sku}</small><br>
-      <small>HSD: ${i.hsd.split('-').reverse().join('/')}</small><br>
-      <span class="${tcls}">${txt}</span><br>
-      <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy SKU</button>
+      
+      <div style="padding-right: 35px;">
+        <div class="info-row p-name">${i.name}</div>
+        <div class="info-row p-sub">SKU: <b>${i.sku}</b></div>
+        <div class="info-row p-sub">HSD: <b>${hsdFormatted}</b></div>
+        
+        <div style="margin-top: 8px;" class="${tcls}">${txt}</div>
+        
+        <button class="copy" onclick="navigator.clipboard.writeText('${i.sku}')">Copy SKU</button>
+      </div>
     </div>`;
   });
 }
 
-// Chạy lần đầu khi load trang
+// Chạy lần đầu
 render();
 </script>
 </body>
