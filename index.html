@@ -35,8 +35,16 @@
         .main-btn { flex: 1; height: 50px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .paste { background: #81c784; }
         .save { background: linear-gradient(#43a047, #2e7d32); }
-        .filter-container { display: flex; justify-content: flex-end; align-items: center; margin: 25px 0 10px; gap: 8px; }
+        
+        /* KHU VỰC CÔNG CỤ */
+        .tools-container { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 10px; }
+        .import-btn { 
+            background: #fff; border: 1px solid #2e7d32; color: #2e7d32; 
+            padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 4px;
+        }
         #sortSelect { padding: 8px 12px; border-radius: 10px; border: 1px solid #a5d6a7; background: #fff; color: #2e7d32; font-size: 13px; font-weight: 600; }
+
         .item { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 6px solid #a5d6a7; position: relative; padding-right: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         .icon-btn { position: absolute; right: 10px; width: 34px; height: 34px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; }
         .del-btn { top: 12px; background: #ffeeee; color: #d32f2f; font-size: 18px; }
@@ -55,6 +63,7 @@
 <body>
 <div class="app">
     <h1>📅 KIỂM DATE</h1>
+    
     <div class="input-group">
         <label>Mã SKU</label>
         <input id="sku" type="text" placeholder="Nhập hoặc dán mã..." autocomplete="off">
@@ -62,11 +71,18 @@
     </div>
     <div class="input-group"><label>Tên sản phẩm</label><input id="name" type="text" placeholder="Tên tự hiện nếu đã lưu"></div>
     <div class="input-group"><label>Hạn sử dụng</label><input id="hsd" type="date"></div>
+    
     <div class="btns">
         <button class="main-btn paste" onclick="smartPaste()">📋 Dán mã</button>
         <button class="main-btn save" onclick="save()">💾 Lưu lại</button>
     </div>
-    <div class="filter-container">
+
+    <div class="tools-container">
+        <input type="file" id="csvFile" accept=".csv, .txt" style="display: none;" onchange="handleFile(this)">
+        <button class="import-btn" onclick="document.getElementById('csvFile').click()">
+            📥 Nhập File
+        </button>
+
         <select id="sortSelect" onchange="render()">
             <option value="date-asc">Hạn dùng (Gần → Xa)</option>
             <option value="date-desc">Hạn dùng (Xa → Gần)</option>
@@ -74,20 +90,59 @@
             <option value="name-desc">Tên (Z → A)</option>
         </select>
     </div>
+
     <div id="list"></div>
 </div>
 
 <script>
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+    
     let data = JSON.parse(localStorage.getItem('dates')||'[]');
     let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
-    const skuInput = document.getElementById('sku'), nameInput = document.getElementById('name'), hsdInput = document.getElementById('hsd'), sugDiv = document.getElementById('suggestions');
+    
+    const skuInput = document.getElementById('sku'), 
+          nameInput = document.getElementById('name'), 
+          hsdInput = document.getElementById('hsd'), 
+          sugDiv = document.getElementById('suggestions');
 
-    // XỬ LÝ GỢI Ý CHỈ HIỆN TÊN
+    // --- XỬ LÝ NHẬP FILE CSV ---
+    function handleFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split(/\r\n|\n/); // Tách dòng
+            let count = 0;
+
+            lines.forEach(line => {
+                // Tách dấu phẩy (CSV thông thường) hoặc chấm phẩy
+                const parts = line.split(/,|;/); 
+                if (parts.length >= 2) {
+                    const sku = String(parts[0]).trim();
+                    const name = String(parts[1]).trim();
+                    
+                    // Chỉ lưu nếu có dữ liệu và bỏ qua dòng tiêu đề
+                    if (sku && name && sku.toLowerCase() !== 'sku') {
+                        skuMap[sku] = name;
+                        count++;
+                    }
+                }
+            });
+
+            localStorage.setItem('skuMap', JSON.stringify(skuMap));
+            alert(`✅ Đã nhập thành công ${count} mã sản phẩm!`);
+            input.value = ''; // Reset ô nhập
+        };
+        reader.readAsText(file);
+    }
+    // ----------------------------
+
+    // GỢI Ý TÊN
     skuInput.addEventListener('input', () => {
         const val = skuInput.value.trim();
         sugDiv.innerHTML = '';
-        
         if (val.length >= 3) {
             const matches = Object.keys(skuMap).filter(s => s.toLowerCase().includes(val.toLowerCase()));
             if (matches.length > 0) {
@@ -95,7 +150,7 @@
                 matches.forEach(m => {
                     const item = document.createElement('div');
                     item.className = 'suggestion-item';
-                    item.innerText = skuMap[m]; // Chỉ hiện tên sản phẩm
+                    item.innerText = skuMap[m];
                     item.onclick = () => {
                         skuInput.value = m;
                         nameInput.value = skuMap[m];
@@ -128,10 +183,14 @@
         if(!skuInput.value || !hsdInput.value) return alert("⚠️ Thiếu thông tin!");
         const fSku = String(skuInput.value).trim();
         const fName = (nameInput.value || 'Sản phẩm mới').trim();
+        
+        // Lưu vào bộ nhớ gợi ý luôn
         skuMap[fSku] = fName;
+        
         data.push({ sku: fSku, name: fName, hsd: hsdInput.value });
         localStorage.setItem('dates', JSON.stringify(data));
         localStorage.setItem('skuMap', JSON.stringify(skuMap));
+        
         skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
         render();
     }
