@@ -15,10 +15,22 @@
         body { margin: 0; font-family: -apple-system, Arial, sans-serif; background: #eaf4e6; padding: 14px; color: #333; -webkit-tap-highlight-color: transparent; }
         .app { background: #f4faee; border-radius: 22px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; margin: 0 auto; }
         h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
-        .input-group { margin-bottom: 16px; }
+        .input-group { margin-bottom: 16px; position: relative; }
         label { color: #2e7d32; font-weight: 700; margin-bottom: 6px; display: block; font-size: 14px; }
         input { width: 100%; height: 50px; font-size: 16px; border-radius: 12px; border: 2px solid #a5d6a7; background: #fff; padding: 0 12px; display: flex; align-items: center; box-sizing: border-box; outline: none; -webkit-appearance: none; appearance: none; }
         input[type="date"] { line-height: 46px; }
+        
+        /* GỢI Ý SKU */
+        .suggestions {
+            position: absolute; top: 74px; left: 0; right: 0; 
+            background: #fff; border-radius: 12px; border: 1px solid #a5d6a7;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100;
+            max-height: 200px; overflow-y: auto; display: none;
+        }
+        .suggestion-item { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; cursor: pointer; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item b { color: #2e7d32; }
+
         .btns { display: flex; gap: 10px; margin-top: 5px; }
         .main-btn { flex: 1; height: 50px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .paste { background: #81c784; }
@@ -43,7 +55,11 @@
 <body>
 <div class="app">
     <h1>📅 KIỂM DATE</h1>
-    <div class="input-group"><label>Mã SKU</label><input id="sku" type="text" placeholder="Nhập hoặc dán mã..." autocomplete="off"></div>
+    <div class="input-group">
+        <label>Mã SKU</label>
+        <input id="sku" type="text" placeholder="Nhập hoặc dán mã..." autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
+    </div>
     <div class="input-group"><label>Tên sản phẩm</label><input id="name" type="text" placeholder="Tên tự hiện nếu đã lưu"></div>
     <div class="input-group"><label>Hạn sử dụng</label><input id="hsd" type="date"></div>
     <div class="btns">
@@ -65,15 +81,43 @@
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
     let data = JSON.parse(localStorage.getItem('dates')||'[]');
     let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
-    const skuInput = document.getElementById('sku'), nameInput = document.getElementById('name'), hsdInput = document.getElementById('hsd');
+    const skuInput = document.getElementById('sku'), nameInput = document.getElementById('name'), hsdInput = document.getElementById('hsd'), sugDiv = document.getElementById('suggestions');
 
-    skuInput.addEventListener('input', () => { if(skuMap[skuInput.value.trim()]) nameInput.value = skuMap[skuInput.value.trim()]; });
+    // XỬ LÝ GỢI Ý SKU
+    skuInput.addEventListener('input', () => {
+        const val = skuInput.value.trim();
+        sugDiv.innerHTML = '';
+        
+        if (val.length >= 3) {
+            const matches = Object.keys(skuMap).filter(s => s.toLowerCase().includes(val.toLowerCase()));
+            if (matches.length > 0) {
+                sugDiv.style.display = 'block';
+                matches.forEach(m => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.innerHTML = `SKU: <b>${m}</b><br><small>${skuMap[m]}</small>`;
+                    item.onclick = () => {
+                        skuInput.value = m;
+                        nameInput.value = skuMap[m];
+                        sugDiv.style.display = 'none';
+                        hsdInput.focus();
+                    };
+                    sugDiv.appendChild(item);
+                });
+            } else { sugDiv.style.display = 'none'; }
+        } else { sugDiv.style.display = 'none'; }
+        
+        if(skuMap[val]) nameInput.value = skuMap[val];
+    });
+
+    // Đóng gợi ý khi bấm ra ngoài
+    document.addEventListener('click', (e) => { if (e.target !== skuInput) sugDiv.style.display = 'none'; });
 
     async function smartPaste() {
         try {
             const text = await navigator.clipboard.readText();
             if (text) {
-                const cleanText = String(text).trim(); // Fix lỗi mất số
+                const cleanText = String(text).trim();
                 skuInput.value = cleanText;
                 if (skuMap[cleanText]) nameInput.value = skuMap[cleanText];
                 hsdInput.focus();
@@ -84,7 +128,7 @@
 
     function save() {
         if(!skuInput.value || !hsdInput.value) return alert("⚠️ Thiếu thông tin!");
-        const fSku = String(skuInput.value).trim(); // Fix lỗi mất số SKU
+        const fSku = String(skuInput.value).trim();
         const fName = (nameInput.value || 'Sản phẩm mới').trim();
         skuMap[fSku] = fName;
         data.push({ sku: fSku, name: fName, hsd: hsdInput.value });
@@ -134,3 +178,4 @@
 </script>
 </body>
 </html>
+
