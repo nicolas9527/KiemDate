@@ -5,25 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="KIỂM DATE">
-    
     <link rel="apple-touch-icon" href="icon.png.PNG">
     <title>KIỂM DATE</title>
     <link rel="manifest" href="manifest.json">
-
     <style>
         body { margin: 0; font-family: -apple-system, Arial, sans-serif; background: #eaf4e6; padding: 14px; color: #333; -webkit-tap-highlight-color: transparent; }
         .app { background: #f4faee; border-radius: 22px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; margin: 0 auto; }
         h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
         .input-group { margin-bottom: 16px; }
         label { color: #2e7d32; font-weight: 700; margin-bottom: 6px; display: block; font-size: 14px; }
-        input { width: 100%; height: 50px; font-size: 16px; border-radius: 12px; border: 2px solid #a5d6a7; background: #fff; padding: 0 12px; display: flex; align-items: center; box-sizing: border-box; outline: none; -webkit-appearance: none; appearance: none; }
+        input { width: 100%; height: 50px; font-size: 16px; border-radius: 12px; border: 2px solid #a5d6a7; background: #fff; padding: 0 12px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
         input[type="date"] { line-height: 46px; }
         .btns { display: flex; gap: 10px; margin-top: 5px; }
         .main-btn { flex: 1; height: 50px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .paste { background: #81c784; }
         .save { background: linear-gradient(#43a047, #2e7d32); }
-        .filter-container { display: flex; justify-content: flex-end; align-items: center; margin: 25px 0 10px; gap: 8px; }
+        .filter-container { display: flex; justify-content: flex-end; align-items: center; margin: 25px 0 10px; }
         #sortSelect { padding: 8px 12px; border-radius: 10px; border: 1px solid #a5d6a7; background: #fff; color: #2e7d32; font-size: 13px; font-weight: 600; }
         .item { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 6px solid #a5d6a7; position: relative; padding-right: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         .icon-btn { position: absolute; right: 10px; width: 34px; height: 34px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; }
@@ -34,17 +31,15 @@
         .warn7 { border-left-color: #c62828; }
         .w7 { color: #c62828; font-weight: 700; }
         .expired { color: #b71c1c; font-weight: 900; text-transform: uppercase; }
-        .info-row { margin-bottom: 4px; line-height: 1.4; }
-        .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; }
-        .p-sku { color: #666; font-size: 12px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-        svg { width: 18px; height: 18px; fill: currentColor; }
+        .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; margin-bottom: 4px; }
+        .p-sku { color: #666; font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 <div class="app">
     <h1>📅 KIỂM DATE</h1>
-    <div class="input-group"><label>Mã SKU</label><input id="sku" type="text" placeholder="Nhập hoặc dán mã..." autocomplete="off"></div>
-    <div class="input-group"><label>Tên sản phẩm</label><input id="name" type="text" placeholder="Tên tự hiện nếu đã lưu"></div>
+    <div class="input-group"><label>Mã SKU</label><input id="sku" type="text" placeholder="Nhập mã..." inputmode="text"></div>
+    <div class="input-group"><label>Tên sản phẩm</label><input id="name" type="text" placeholder="Tên sản phẩm..."></div>
     <div class="input-group"><label>Hạn sử dụng</label><input id="hsd" type="date"></div>
     <div class="btns">
         <button class="main-btn paste" onclick="smartPaste()">📋 Dán mã</button>
@@ -54,48 +49,68 @@
         <select id="sortSelect" onchange="render()">
             <option value="date-asc">Hạn dùng (Gần → Xa)</option>
             <option value="date-desc">Hạn dùng (Xa → Gần)</option>
-            <option value="name-asc">Tên (A → Z)</option>
-            <option value="name-desc">Tên (Z → A)</option>
         </select>
     </div>
     <div id="list"></div>
 </div>
 
 <script>
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
-    let data = JSON.parse(localStorage.getItem('dates')||'[]');
-    let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
-    const skuInput = document.getElementById('sku'), nameInput = document.getElementById('name'), hsdInput = document.getElementById('hsd');
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
-    skuInput.addEventListener('input', () => { if(skuMap[skuInput.value.trim()]) nameInput.value = skuMap[skuInput.value.trim()]; });
+    let data = JSON.parse(localStorage.getItem('dates') || '[]');
+    let skuMap = JSON.parse(localStorage.getItem('skuMap') || '{}');
+
+    const skuInput = document.getElementById('sku');
+    const nameInput = document.getElementById('name');
+    const hsdInput = document.getElementById('hsd');
+
+    // Tự động điền tên nếu SKU đã tồn tại
+    skuInput.addEventListener('input', () => {
+        const val = skuInput.value.trim();
+        if (skuMap[val]) nameInput.value = skuMap[val];
+    });
 
     async function smartPaste() {
         try {
             const text = await navigator.clipboard.readText();
             if (text) {
-                skuInput.value = text.trim();
-                if (skuMap[text.trim()]) nameInput.value = skuMap[text.trim()];
+                // Ép kiểu chuỗi ngay khi dán
+                const cleanText = String(text).trim();
+                skuInput.value = cleanText;
+                if (skuMap[cleanText]) nameInput.value = skuMap[cleanText];
                 hsdInput.focus();
-                try { hsdInput.showPicker(); } catch(e){}
             }
         } catch (e) { skuInput.focus(); }
     }
 
     function save() {
-        if(!skuInput.value || !hsdInput.value) return alert("⚠️ Thiếu thông tin!");
-        const fName = (nameInput.value || 'Sản phẩm mới').trim(), fSku = skuInput.value.trim();
+        if (!skuInput.value || !hsdInput.value) return alert("⚠️ Vui lòng nhập đủ thông tin!");
+        
+        // Luôn lưu SKU dưới dạng String để không mất số
+        const fSku = String(skuInput.value).trim();
+        const fName = (nameInput.value || 'Sản phẩm mới').trim();
+
         skuMap[fSku] = fName;
         data.push({ sku: fSku, name: fName, hsd: hsdInput.value });
+
         localStorage.setItem('dates', JSON.stringify(data));
         localStorage.setItem('skuMap', JSON.stringify(skuMap));
+
         skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
         render();
+        skuInput.focus();
     }
 
-    function deleteItem(index) { if(confirm("Xóa mục này?")) { data.splice(index, 1); localStorage.setItem('dates', JSON.stringify(data)); render(); } }
+    function deleteItem(index) {
+        if (confirm("Xóa mục này?")) {
+            data.splice(index, 1);
+            localStorage.setItem('dates', JSON.stringify(data));
+            render();
+        }
+    }
 
     function copyText(txt, btn) {
-        navigator.clipboard.writeText(txt).then(() => {
+        navigator.clipboard.writeText(String(txt)).then(() => {
             const old = btn.innerHTML; btn.innerHTML = '✔';
             setTimeout(() => { btn.innerHTML = old; }, 1000);
         });
@@ -105,26 +120,28 @@
         const listDiv = document.getElementById('list');
         listDiv.innerHTML = '';
         const sortMode = document.getElementById('sortSelect').value;
-        data.sort((a, b) => {
-            if (sortMode.includes('date')) return sortMode === 'date-asc' ? new Date(a.hsd) - new Date(b.hsd) : new Date(b.hsd) - new Date(a.hsd);
-            return sortMode === 'name-asc' ? a.name.localeCompare(b.name, 'vi') : b.name.localeCompare(a.name, 'vi');
-        });
+
+        data.sort((a, b) => sortMode === 'date-asc' ? new Date(a.hsd) - new Date(b.hsd) : new Date(b.hsd) - new Date(a.hsd));
+
         data.forEach((i, index) => {
-            const d = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
+            const d = Math.ceil((new Date(i.hsd + 'T23:59:59') - Date.now()) / 86400000);
             let cls = '', txt = `Còn ${d} ngày`, tcls = '';
             if (d < 0) { cls = 'warn7'; txt = 'HẾT HẠN'; tcls = 'expired'; }
             else if (d <= 7) { cls = 'warn7'; txt = `⚠️ Còn ${d} ngày`; tcls = 'w7'; }
             else if (d <= 30) { cls = 'warn30'; txt = `⏰ Còn ${d} ngày`; tcls = 'w30'; }
+
             listDiv.innerHTML += `
             <div class="item ${cls}">
                 <div>
-                    <div class="info-row p-name">${i.name}</div>
-                    <div class="info-row"><span class="p-sku">${i.sku}</span></div>
-                    <div class="info-row" style="font-size:14px">HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
-                    <div class="info-row ${tcls}" style="margin-top:6px; font-size: 13px;">${txt}</div>
+                    <div class="p-name">${i.name}</div>
+                    <div class="p-sku">${i.sku}</div>
+                    <div style="font-size:14px">HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
+                    <div class="${tcls}" style="margin-top:6px; font-size: 13px;">${txt}</div>
                 </div>
                 <button class="icon-btn del-btn" onclick="deleteItem(${index})">×</button>
-                <button class="icon-btn copy-btn" onclick="copyText('${i.sku}', this)"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></button>
+                <button class="icon-btn copy-btn" onclick="copyText('${i.sku}', this)">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
             </div>`;
         });
     }
