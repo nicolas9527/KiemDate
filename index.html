@@ -1,1002 +1,113 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="KIỂM DATE" />
-  <link rel="apple-touch-icon" href="icon.png.PNG" />
-  <link rel="icon" type="image/png" href="icon.png.PNG" />
-
-  <title>KIỂM DATE</title>
-
-  <style>
-    :root{
-      --primary:#1976d2;
-      --secondary:#64b5f6;
-      --bg:#f0f4f8;
-      --card:#ffffff;
-      --danger:#d32f2f;
-      --warning:#ef6c00;
-      --text:#333;
-      --muted:#6b7280;
-      --border:#e1e8ed;
-    }
-
-    * { box-sizing: border-box; }
-    body{
-      margin:0;
-      font-family:-apple-system, system-ui, sans-serif;
-      background:var(--bg);
-      padding:12px;
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-    }
-    .app{ max-width:520px; margin:0 auto; }
-
-    h1{
-      text-align:center;
-      color:var(--primary);
-      font-size:22px;
-      margin:10px 0 6px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .sub{
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:10px;
-    }
-
-    .input-box{
-      background:var(--card);
-      border-radius:24px;
-      padding:18px;
-      box-shadow:0 4px 20px rgba(0,0,0,0.05);
-      margin-bottom:12px;
-    }
-    .input-group{ margin-bottom:14px; width:100%; position:relative; }
-    label{
-      color:var(--primary);
-      font-weight:800;
-      font-size:13px;
-      display:block;
-      margin:0 0 6px 8px;
-    }
-    input[type="text"], input[type="date"]{
-      width:100%;
-      height:50px;
-      border-radius:15px;
-      border:1.5px solid var(--border);
-      padding:0 14px;
-      font-size:16px;
-      outline:none;
-      background:#f9fbff;
-      text-align:center;
-      display:block;
-      line-height:50px;
-    }
-    input[type="date"]{ -webkit-appearance:none; min-height:50px; }
-    input:focus{ border-color:var(--secondary); background:#fff; }
-    input:focus::placeholder{ color:transparent; }
-
-    .suggestions{
-      position:absolute;
-      top:76px;
-      left:0; right:0;
-      background:#fff;
-      border-radius:15px;
-      box-shadow:0 8px 25px rgba(0,0,0,0.15);
-      z-index:100;
-      max-height:220px;
-      overflow:auto;
-      display:none;
-      border:1px solid #eee;
-    }
-    .sug-item{
-      padding:12px 14px;
-      border-bottom:1px solid #f3f4f6;
-      font-size:14px;
-      color:var(--text);
-      text-align:left;
-    }
-    .sug-item b{ display:block; font-size:14px; }
-    .sug-item small{ color:var(--muted); }
-
-    .btn-row{ display:flex; gap:10px; margin-top:2px; }
-    .btn{
-      flex:1;
-      height:50px;
-      border:none;
-      border-radius:15px;
-      font-weight:800;
-      font-size:15px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      color:#fff;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn:active{ transform:scale(0.99); }
-    .btn-paste{ background:var(--secondary); }
-    .btn-save{ background:var(--primary); }
-    .btn-cancel{ background:#94a3b8; }
-    .btn-danger{ background:var(--danger); }
-
-    .data-manager{
-      background:rgba(255, 255, 255, 0.55);
-      border-radius:20px;
-      padding:12px;
-      margin-bottom:12px;
-      border:1px solid rgba(25, 118, 210, 0.1);
-    }
-    .manager-row{ display:flex; gap:8px; margin-bottom:10px; }
-    .tool-btn{
-      flex:1;
-      height:42px;
-      background:#fff;
-      border:1.5px solid var(--primary);
-      color:var(--primary);
-      border-radius:12px;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-    }
-    .tool-btn.primary{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
-    }
-    .tool-btn.danger{
-      border-color:var(--danger);
-      color:var(--danger);
-    }
-
-    .search-bar{
-      width:100%;
-      height:46px;
-      border-radius:23px;
-      border:1.5px solid #d1d9e0;
-      padding:0 15px;
-      background:#fff;
-      font-size:15px;
-      text-align:center;
-      outline:none;
-    }
-
-    .summary{
-      display:flex;
-      gap:8px;
-      margin:10px 0 12px;
-    }
-    .chip{
-      flex:1;
-      background:#fff;
-      border:1px solid #eef2f7;
-      border-radius:14px;
-      padding:10px 10px;
-      text-align:center;
-      box-shadow:0 2px 10px rgba(0,0,0,0.03);
-    }
-    .chip .n{ font-weight:900; font-size:18px; line-height:1.2; }
-    .chip .t{ font-size:11px; color:var(--muted); font-weight:700; margin-top:2px; }
-
-    .item{
-      background:#fff;
-      border-radius:20px;
-      padding:16px;
-      margin-bottom:12px;
-      position:relative;
-      border-left:6px solid #d1d9e0;
-      box-shadow:0 2px 12px rgba(0,0,0,0.04);
-    }
-    .c-red{ border-left-color:var(--danger); background:#fffbfb; }
-    .c-orange{ border-left-color:#ff9800; background:#fffaf2; }
-
-    .p-name{
-      font-weight:900;
-      color:#0d47a1;
-      font-size:16px;
-      margin-bottom:6px;
-      text-transform:uppercase;
-      padding-right:126px;
-      word-break:break-word;
-    }
-    .p-sku{
-      font-size:11px;
-      background:#e3f2fd;
-      padding:3px 8px;
-      border-radius:6px;
-      color:#1565c0;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      display:inline-block;
-      margin-bottom:6px;
-    }
-    .meta{
-      font-size:13px;
-      color:#555;
-      margin-top:2px;
-    }
-    .t-status{
-      font-size:14px;
-      font-weight:900;
-      margin-top:8px;
-    }
-    .t-red{ color:var(--danger); }
-    .t-orange{ color:var(--warning); }
-    .t-ok{ color:#1b5e20; }
-
-    .action-btns{
-      position:absolute;
-      top:12px;
-      right:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
-    }
-    .icon-btn{
-      width:42px;
-      height:42px;
-      border-radius:12px;
-      background:#eef6ff;
-      border:1px solid #cfe6ff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-      font-size:18px;
-    }
-    .icon-btn.danger{
-      background:#fff0f0;
-      border-color:#ffd0d0;
-    }
-
-    /* Toast */
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:18px;
-      transform:translateX(-50%);
-      background:rgba(17,24,39,0.92);
-      color:#fff;
-      padding:10px 14px;
-      border-radius:14px;
-      font-weight:800;
-      font-size:13px;
-      display:none;
-      z-index:999;
-      max-width:92%;
-      text-align:center;
-      box-shadow:0 10px 30px rgba(0,0,0,0.25);
-    }
-
-    /* Modal */
-    .modal-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.35);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:1000;
-      padding:14px;
-    }
-    .modal{
-      width:100%;
-      max-width:520px;
-      background:#fff;
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 20px 50px rgba(0,0,0,0.25);
-    }
-    .modal h2{
-      margin:6px 4px 8px;
-      font-size:16px;
-      color:#0f172a;
-      font-weight:900;
-    }
-    .modal p{
-      margin:0 4px 12px;
-      color:var(--muted);
-      font-size:13px;
-      font-weight:700;
-    }
-    .modal .btn-row{ margin-top:10px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KIỂM DATE</title>
+<style>
+body{font-family:system-ui;background:#f0f4f8;padding:12px}
+.app{max-width:480px;margin:auto}
+h1{text-align:center;color:#1976d2}
+.box{background:#fff;padding:16px;border-radius:16px;margin-bottom:12px}
+input,button{width:100%;height:44px;margin-top:8px;border-radius:12px;border:1px solid #ccc;font-size:15px}
+button{background:#1976d2;color:#fff;font-weight:bold;border:none}
+.item{background:#fff;padding:14px;border-radius:14px;margin-bottom:10px;border-left:6px solid #ccc}
+.red{border-left-color:#d32f2f;background:#fff5f5}
+.orange{border-left-color:#ff9800;background:#fffaf2}
+small{color:#555}
+</style>
 </head>
-
 <body>
-  <div class="app">
-    <h1>📅 KIỂM DATE</h1>
-    <div class="sub">Offline • Lưu trong máy (localStorage) • Có sửa/xoá an toàn</div>
 
-    <div class="input-box">
-      <div class="input-group">
-        <label>Mã SKU / Barcode</label>
-        <input id="sku" type="text" placeholder="Nhập hoặc quét mã..." autocomplete="off" inputmode="text" />
-        <div id="suggestions" class="suggestions"></div>
-      </div>
+<div class="app">
+<h1>📅 KIỂM DATE</h1>
 
-      <div class="input-group">
-        <label>Tên sản phẩm</label>
-        <input id="name" type="text" placeholder="Tên sản phẩm..." autocomplete="off" />
-      </div>
+<div class="box">
+<input id="sku" placeholder="SKU / Barcode">
+<input id="name" placeholder="Tên sản phẩm">
+<input id="hsd" type="date">
+<button onclick="save()">💾 Lưu</button>
+</div>
 
-      <div class="input-group">
-        <label>Hạn sử dụng (HSD)</label>
-        <input id="hsd" type="date" />
-      </div>
+<div class="box">
+<button onclick="exportCSV()">📤 Xuất CSV</button>
+<input type="file" id="csv" onchange="importCSV(this)" accept=".csv">
+</div>
 
-      <div class="btn-row">
-        <button id="btnPaste" class="btn btn-paste" type="button">📋 Dán mã</button>
-        <button id="btnSave" class="btn btn-save" type="button">💾 Lưu lại</button>
-      </div>
-      <div id="editRow" class="btn-row" style="display:none; margin-top:10px;">
-        <button id="btnCancelEdit" class="btn btn-cancel" type="button">↩️ Huỷ sửa</button>
-        <button id="btnDeleteEdit" class="btn btn-danger" type="button">🗑️ Xoá dòng</button>
-      </div>
-    </div>
-
-    <div class="summary">
-      <div class="chip">
-        <div id="sumExpired" class="n">0</div>
-        <div class="t">Hết hạn</div>
-      </div>
-      <div class="chip">
-        <div id="sum7" class="n">0</div>
-        <div class="t">≤ 7 ngày</div>
-      </div>
-      <div class="chip">
-        <div id="sum30" class="n">0</div>
-        <div class="t">≤ 30 ngày</div>
-      </div>
-    </div>
-
-    <div class="data-manager">
-      <div class="manager-row">
-        <input type="file" id="csvIn" hidden accept=".csv,text/csv" />
-        <button id="btnImport" class="tool-btn" type="button">📥 NHẬP CSV</button>
-        <button id="btnExport" class="tool-btn primary" type="button">📤 XUẤT CSV</button>
-        <button id="btnClearAll" class="tool-btn danger" type="button">🧹 XOÁ ALL</button>
-      </div>
-      <input id="search" class="search-bar" type="text" placeholder="Tìm tên / SKU / HSD..." />
-    </div>
-
-    <div id="list"></div>
-  </div>
-
-  <div id="toast" class="toast"></div>
-
-  <!-- Modal confirm -->
-  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
-    <div class="modal">
-      <h2 id="modalTitle">Xác nhận</h2>
-      <p id="modalText">Bạn chắc chứ?</p>
-      <div class="btn-row">
-        <button id="modalCancel" class="btn btn-cancel" type="button">Huỷ</button>
-        <button id="modalOk" class="btn btn-danger" type="button">Đồng ý</button>
-      </div>
-    </div>
-  </div>
+<div id="list"></div>
+</div>
 
 <script>
-/* =========================
-   KIỂM DATE - bản nâng cấp
-   - Fix xoá sai dòng (dùng id)
-   - Chống XSS (render bằng createElement/textContent)
-   - Có sửa (edit), huỷ sửa
-   - Import CSV parse tốt hơn + chuẩn hoá ngày
-   - Duplicate handling (update nếu trùng)
-   - Toast + modal confirm
-   - Migration từ bản cũ (dates + skuMap)
-========================= */
+let data = JSON.parse(localStorage.getItem('dates_v2')||'[]');
 
-(function(){
-  // ---------- DOM ----------
-  const skuI = document.getElementById('sku');
-  const nameI = document.getElementById('name');
-  const hsdI = document.getElementById('hsd');
-  const sugD = document.getElementById('suggestions');
-  const listEl = document.getElementById('list');
-  const searchI = document.getElementById('search');
+function save(){
+  const sku=sku.value.trim();
+  const name=nameI.value.trim()||'Sản phẩm';
+  const hsd=hsdI.value;
+  if(!sku||!hsd){alert('Thiếu SKU hoặc HSD');return}
+  data.push({sku,name,hsd});
+  localStorage.setItem('dates_v2',JSON.stringify(data));
+  sku.value=nameI.value=hsdI.value='';
+  render();
+}
 
-  const btnPaste = document.getElementById('btnPaste');
-  const btnSave = document.getElementById('btnSave');
-  const editRow = document.getElementById('editRow');
-  const btnCancelEdit = document.getElementById('btnCancelEdit');
-  const btnDeleteEdit = document.getElementById('btnDeleteEdit');
+const skuI=document.getElementById('sku');
+const nameI=document.getElementById('name');
+const hsdI=document.getElementById('hsd');
 
-  const btnImport = document.getElementById('btnImport');
-  const btnExport = document.getElementById('btnExport');
-  const btnClearAll = document.getElementById('btnClearAll');
-  const csvIn = document.getElementById('csvIn');
+function daysLeft(h){
+  return Math.ceil((new Date(h+'T23:59:59')-Date.now())/86400000);
+}
 
-  const sumExpired = document.getElementById('sumExpired');
-  const sum7 = document.getElementById('sum7');
-  const sum30 = document.getElementById('sum30');
-
-  const toastEl = document.getElementById('toast');
-
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalText = document.getElementById('modalText');
-  const modalCancel = document.getElementById('modalCancel');
-  const modalOk = document.getElementById('modalOk');
-
-  // ---------- Storage keys ----------
-  const KEY_V2 = 'kiemdate_v2';
-  const KEY_V2_SKUMAP = 'kiemdate_v2_skuMap';
-
-  // ---------- State ----------
-  let data = [];     // {id, sku, name, hsd, createdAt}
-  let skuMap = {};   // { sku: name }
-  let editingId = null; // id đang sửa
-
-  // ---------- Utils ----------
-  const now = () => Date.now();
-
-  function uid(){
-    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-    return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
-  }
-
-  function showToast(msg, ms=1400){
-    toastEl.textContent = msg;
-    toastEl.style.display = 'block';
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(()=> toastEl.style.display='none', ms);
-  }
-
-  function openConfirm({title='Xác nhận', text='Bạn chắc chứ?', okText='Đồng ý', cancelText='Huỷ'}){
-    return new Promise(resolve => {
-      modalTitle.textContent = title;
-      modalText.textContent = text;
-      modalOk.textContent = okText;
-      modalCancel.textContent = cancelText;
-
-      modalBackdrop.style.display = 'flex';
-
-      const cleanup = () => {
-        modalBackdrop.style.display = 'none';
-        modalCancel.removeEventListener('click', onCancel);
-        modalOk.removeEventListener('click', onOk);
-        modalBackdrop.removeEventListener('click', onBackdrop);
-      };
-      const onCancel = () => { cleanup(); resolve(false); };
-      const onOk = () => { cleanup(); resolve(true); };
-      const onBackdrop = (e) => {
-        if (e.target === modalBackdrop) { cleanup(); resolve(false); }
-      };
-
-      modalCancel.addEventListener('click', onCancel);
-      modalOk.addEventListener('click', onOk);
-      modalBackdrop.addEventListener('click', onBackdrop);
-    });
-  }
-
-  function clampStr(s){
-    return (s ?? '').toString().trim();
-  }
-
-  function fmtDMY(iso){
-    // iso: yyyy-mm-dd
-    if(!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '';
-    const [y,m,d] = iso.split('-');
-    return `${d}/${m}/${y}`;
-  }
-
-  function endOfDayLocal(iso){
-    // iso yyyy-mm-dd -> Date at 23:59:59 local
-    return new Date(iso + 'T23:59:59');
-  }
-
-  function daysLeft(iso){
-    const target = endOfDayLocal(iso);
-    const diff = target.getTime() - now();
-    return Math.ceil(diff / 86400000);
-  }
-
-  function normalizeSku(s){
-    // giữ nguyên ký tự nhưng trim; bạn có thể muốn upper-case tuỳ hệ thống
-    return clampStr(s);
-  }
-
-  function normalizeName(n){
-    return clampStr(n);
-  }
-
-  function normalizeDateToISO(v){
-    v = clampStr(v);
-    if(!v) return '';
-
-    // yyyy-mm-dd (chuẩn)
-    if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-
-    // dd/mm/yyyy hoặc dd-mm-yyyy
-    let m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-    if(m){
-      const dd = String(m[1]).padStart(2,'0');
-      const mm = String(m[2]).padStart(2,'0');
-      const yy = m[3];
-      return `${yy}-${mm}-${dd}`;
-    }
-
-    // yyyy/mm/dd
-    m = v.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
-    if(m){
-      const yy = m[1];
-      const mm = String(m[2]).padStart(2,'0');
-      const dd = String(m[3]).padStart(2,'0');
-      return `${yy}-${mm}-${dd}`;
-    }
-
-    // Excel serial date (ví dụ 45234)
-    if(/^\d+$/.test(v)){
-      const n = Number(v);
-      if(n > 30000 && n < 80000){
-        // Excel serial base: 1899-12-30 (do bug 1900 leap year)
-        const base = new Date(Date.UTC(1899, 11, 30));
-        const dt = new Date(base.getTime() + n * 86400000);
-        // convert to local-ish ISO date
-        const yy = dt.getUTCFullYear();
-        const mm = String(dt.getUTCMonth()+1).padStart(2,'0');
-        const dd = String(dt.getUTCDate()).padStart(2,'0');
-        return `${yy}-${mm}-${dd}`;
-      }
-    }
-
-    // fallback: try Date parse
-    const d = new Date(v);
-    if(!isNaN(d.getTime())){
-      const yy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const dd = String(d.getDate()).padStart(2,'0');
-      return `${yy}-${mm}-${dd}`;
-    }
-
-    return '';
-  }
-
-  function validISODate(iso){
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
-    const d = new Date(iso + 'T12:00:00');
-    if (isNaN(d.getTime())) return false;
-    const [y,m,dd] = iso.split('-').map(Number);
-    return d.getFullYear()===y && (d.getMonth()+1)===m && d.getDate()===dd;
-  }
-
-  function saveToStorage(){
-    localStorage.setItem(KEY_V2, JSON.stringify(data));
-    localStorage.setItem(KEY_V2_SKUMAP, JSON.stringify(skuMap));
-  }
-
-  function loadFromStorage(){
-    // ưu tiên V2
-    const v2 = localStorage.getItem(KEY_V2);
-    const v2m = localStorage.getItem(KEY_V2_SKUMAP);
-
-    if(v2){
-      try { data = JSON.parse(v2) || []; } catch { data = []; }
-      try { skuMap = JSON.parse(v2m || '{}') || {}; } catch { skuMap = {}; }
-      // basic sanitize
-      data = Array.isArray(data) ? data.filter(x => x && x.id && x.sku && x.hsd) : [];
-      return;
-    }
-
-    // Migration từ bản cũ: dates + skuMap
-    const oldDates = localStorage.getItem('dates');
-    const oldMap = localStorage.getItem('skuMap');
-    if(oldDates || oldMap){
-      let od = [];
-      let om = {};
-      try { od = JSON.parse(oldDates || '[]') || []; } catch { od = []; }
-      try { om = JSON.parse(oldMap || '{}') || {}; } catch { om = {}; }
-
-      skuMap = om && typeof om === 'object' ? om : {};
-      data = [];
-
-      (Array.isArray(od) ? od : []).forEach(item => {
-        const s = normalizeSku(item?.sku);
-        const n = normalizeName(item?.name) || skuMap[s] || 'Sản phẩm mới';
-        const h = normalizeDateToISO(item?.hsd);
-        if(s && validISODate(h)){
-          data.push({ id: uid(), sku: s, name: n, hsd: h, createdAt: now() });
-          skuMap[s] = skuMap[s] || n;
-        }
-      });
-
-      saveToStorage();
-      showToast('✅ Đã nâng cấp dữ liệu lên bản mới');
-      return;
-    }
-
-    // none
-    data = [];
-    skuMap = {};
-  }
-
-  // ---------- Suggestions ----------
-  function hideSuggestions(){ sugD.style.display = 'none'; sugD.innerHTML = ''; }
-
-  function updateSuggestions(){
-    const val = clampStr(skuI.value);
-    if(!val || val.length < 2){
-      hideSuggestions();
-      if (skuMap[val]) nameI.value = skuMap[val];
-      return;
-    }
-
-    // autofill exact
-    if (skuMap[val]) nameI.value = skuMap[val];
-
-    const keys = Object.keys(skuMap);
-    const matches = keys
-      .filter(s => s.toLowerCase().includes(val.toLowerCase()))
-      .slice(0, 8);
-
-    sugD.innerHTML = '';
-    if(matches.length === 0){
-      hideSuggestions();
-      return;
-    }
-
-    matches.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'sug-item';
-      const b = document.createElement('b');
-      b.textContent = m;
-      const sm = document.createElement('small');
-      sm.textContent = skuMap[m] || '';
-      div.appendChild(b);
-      div.appendChild(sm);
-
-      div.addEventListener('click', () => {
-        skuI.value = m;
-        nameI.value = skuMap[m] || '';
-        hideSuggestions();
-        hsdI.focus();
-      });
-      sugD.appendChild(div);
-    });
-
-    sugD.style.display = 'block';
-  }
-
-  // click outside to hide suggestions
-  document.addEventListener('click', (e) => {
-    if(!e.target.closest('.input-group')) hideSuggestions();
+function render(){
+  list.innerHTML='';
+  data.forEach((i,idx)=>{
+    const d=daysLeft(i.hsd);
+    let cls='',txt=`Còn ${d} ngày`;
+    if(d<0){cls='red';txt='❌ Hết hạn'}
+    else if(d<=30){cls='orange';txt=`⏰ ${d} ngày`}
+    list.innerHTML+=`
+      <div class="item ${cls}">
+        <b>${i.name}</b><br>
+        <small>${i.sku}</small><br>
+        HSD: ${i.hsd}<br>
+        <b>${txt}</b><br>
+        <button onclick="del(${idx})" style="background:#d32f2f;margin-top:6px">Xoá</button>
+      </div>`;
   });
+}
 
-  // ---------- CRUD ----------
-  function enterEditMode(id){
-    const item = data.find(x => x.id === id);
-    if(!item) return;
-
-    editingId = id;
-    skuI.value = item.sku;
-    nameI.value = item.name;
-    hsdI.value = item.hsd;
-
-    btnSave.textContent = '✅ Cập nhật';
-    editRow.style.display = 'flex';
-    showToast('✏️ Đang sửa dòng');
-    hideSuggestions();
-    hsdI.focus();
-  }
-
-  function exitEditMode(){
-    editingId = null;
-    btnSave.textContent = '💾 Lưu lại';
-    editRow.style.display = 'none';
-    skuI.value = '';
-    nameI.value = '';
-    hsdI.value = '';
-    hideSuggestions();
-  }
-
-  function upsertItem(){
-    const s = normalizeSku(skuI.value);
-    const nIn = normalizeName(nameI.value);
-    const h = normalizeDateToISO(hsdI.value);
-
-    if(!s){
-      showToast('⚠️ Vui lòng nhập SKU');
-      skuI.focus();
-      return;
-    }
-    if(!validISODate(h)){
-      showToast('⚠️ Ngày HSD không hợp lệ');
-      hsdI.focus();
-      return;
-    }
-
-    // Tên cuối cùng: ưu tiên tên nhập, nếu trống dùng skuMap cũ, nếu chưa có thì "Sản phẩm mới"
-    const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
-
-    // Nếu skuMap có tên cũ khác và user nhập tên mới -> hỏi đổi toàn bộ cho SKU này
-    if(skuMap[s] && nIn && skuMap[s] !== nIn){
-      openConfirm({
-        title: 'Đổi tên SKU?',
-        text: `SKU "${s}" đang là "${skuMap[s]}". Bạn muốn đổi thành "${nIn}" cho tất cả dòng cùng SKU?`,
-        okText: 'Đổi tất cả',
-        cancelText: 'Giữ tên cũ'
-      }).then(ok => {
-        if(ok){
-          skuMap[s] = nIn;
-          data.forEach(it => { if(it.sku === s) it.name = nIn; });
-          // Sau đó tiếp tục lưu item hiện tại
-          _commitUpsert({ s, h, finalName: nIn });
-        }else{
-          // Giữ tên cũ; nếu user đang trống tên thì fill lại
-          nameI.value = skuMap[s] || finalName;
-          _commitUpsert({ s, h, finalName: skuMap[s] || finalName });
-        }
-      });
-      return;
-    }
-
-    _commitUpsert({ s, h, finalName });
-  }
-
-  function _commitUpsert({ s, h, finalName }){
-    // cập nhật skuMap (không phá tên cũ nếu finalName là "Sản phẩm mới" và skuMap đã có)
-    if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')){
-      skuMap[s] = finalName;
-    }
-
-    if(editingId){
-      // update dòng đang sửa
-      const idx = data.findIndex(x => x.id === editingId);
-      if(idx === -1){
-        showToast('⚠️ Không tìm thấy dòng để sửa');
-        exitEditMode();
-        return;
-      }
-
-      // Nếu sửa thành SKU+HSD trùng với dòng khác -> hỏi gộp
-      const dup = data.find(x => x.id !== editingId && x.sku === s && x.hsd === h);
-      if(dup){
-        openConfirm({
-          title:'Trùng SKU + HSD',
-          text:'Đã có dòng khác cùng SKU và HSD. Bạn muốn gộp (xoá dòng đang sửa và cập nhật tên cho dòng kia)?',
-          okText:'Gộp',
-          cancelText:'Không'
-        }).then(ok => {
-          if(!ok) return;
-
-          // gộp: cập nhật dup name, xoá dòng current
-          dup.name = skuMap[s] || finalName;
-          data.splice(idx, 1);
-          saveToStorage();
-          render();
-          showToast('✅ Đã gộp dòng');
-          exitEditMode();
-        });
-        return;
-      }
-
-      data[idx].sku = s;
-      data[idx].hsd = h;
-      data[idx].name = skuMap[s] || finalName;
-      saveToStorage();
-      render();
-      showToast('✅ Đã cập nhật');
-      exitEditMode();
-      return;
-    }
-
-    // create mới: nếu trùng SKU+HSD thì hỏi update thay vì thêm
-    const existing = data.find(x => x.sku === s && x.hsd === h);
-    if(existing){
-      openConfirm({
-        title:'Đã tồn tại',
-        text:'Dòng này (cùng SKU + HSD) đã có. Bạn muốn cập nhật tên cho dòng đó thay vì thêm dòng mới?',
-        okText:'Cập nhật',
-        cancelText:'Thêm mới'
-      }).then(ok => {
-        if(ok){
-          existing.name = skuMap[s] || finalName;
-          saveToStorage();
-          render();
-          showToast('✅ Đã cập nhật dòng cũ');
-        }else{
-          data.push({ id: uid(), sku: s, name: skuMap[s] || finalName, hsd: h, createdAt: now() });
-          saveToStorage();
-          render();
-          showToast('✅ Đã thêm mới');
-        }
-        skuI.value = '';
-        nameI.value = '';
-        hsdI.value = '';
-        skuI.focus();
-      });
-      return;
-    }
-
-    data.push({ id: uid(), sku: s, name: skuMap[s] || finalName, hsd: h, createdAt: now() });
-    saveToStorage();
+function del(i){
+  if(confirm('Xoá dòng này?')){
+    data.splice(i,1);
+    localStorage.setItem('dates_v2',JSON.stringify(data));
     render();
-    showToast('✅ Đã lưu');
-    skuI.value = '';
-    nameI.value = '';
-    hsdI.value = '';
-    skuI.focus();
   }
+}
 
-  async function deleteById(id){
-    const item = data.find(x => x.id === id);
-    if(!item) return;
+function exportCSV(){
+  let csv='sku,name,hsd\n';
+  data.forEach(i=>csv+=`${i.sku},${i.name},${i.hsd}\n`);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='kiem_date.csv';
+  a.click();
+}
 
-    const ok = await openConfirm({
-      title:'Xoá dòng?',
-      text:`Xoá "${item.name}" (SKU ${item.sku}, HSD ${fmtDMY(item.hsd)})?`,
-      okText:'Xoá',
-      cancelText:'Huỷ'
+function importCSV(input){
+  const r=new FileReader();
+  r.onload=e=>{
+    e.target.result.split(/\r?\n/).forEach(l=>{
+      const p=l.split(',');
+      if(p[0]&&p[0]!=='sku') data.push({sku:p[0],name:p[1]||'SP',hsd:p[2]});
     });
-    if(!ok) return;
-
-    data = data.filter(x => x.id !== id);
-    saveToStorage();
+    localStorage.setItem('dates_v2',JSON.stringify(data));
     render();
-    showToast('🗑️ Đã xoá');
-    if(editingId === id) exitEditMode();
-  }
+  };
+  r.readAsText(input.files[0]);
+}
 
-  // ---------- Render ----------
-  function statusFor(d){
-    // d: daysLeft
-    if(d < 0) return { cls:'c-red', text:'❌ ĐÃ HẾT HẠN', tcls:'t-red' };
-    if(d === 0) return { cls:'c-red', text:'🔥 Hết hạn hôm nay', tcls:'t-red' };
-    if(d <= 7) return { cls:'c-red', text:`⚠️ Sắp hết hạn (${d} ngày)`, tcls:'t-red' };
-    if(d <= 30) return { cls:'c-orange', text:`⏰ Cận date (${d} ngày)`, tcls:'t-orange' };
-    return { cls:'', text:`✅ Còn ${d} ngày`, tcls:'t-ok' };
-  }
-
-  function computeSummary(items){
-    let expired = 0, le7 = 0, le30 = 0;
-    items.forEach(it => {
-      const d = daysLeft(it.hsd);
-      if(d < 0) expired++;
-      if(d >= 0 && d <= 7) le7++;
-      if(d >= 0 && d <= 30) le30++;
-    });
-    sumExpired.textContent = String(expired);
-    sum7.textContent = String(le7);
-    sum30.textContent = String(le30);
-  }
-
-  function render(){
-    const key = clampStr(searchI.value).toLowerCase();
-    listEl.innerHTML = '';
-
-    // sanitize data (đề phòng hsd sai)
-    data = data.filter(x => x && x.id && x.sku && validISODate(x.hsd));
-
-    const filtered = data.filter(it => {
-      if(!key) return true;
-      const hay = (it.name + ' ' + it.sku + ' ' + it.hsd + ' ' + fmtDMY(it.hsd)).toLowerCase();
-      return hay.includes(key);
-    });
-
-    // Sort: expired -> soon -> far (người dùng thường muốn thấy nguy hiểm trước)
-    filtered.sort((a,b) => {
-      const da = daysLeft(a.hsd);
-      const db = daysLeft(b.hsd);
-      // expired first
-      if(da < 0 && db >= 0) return -1;
-      if(db < 0 && da >= 0) return 1;
-      // both non-expired: ascending by days
-      if(da !== db) return da - db;
-      // tie: by SKU then by name
-      const s = a.sku.localeCompare(b.sku);
-      if(s !== 0) return s;
-      return a.name.localeCompare(b.name);
-    });
-
-    computeSummary(data);
-
-    if(filtered.length === 0){
-      const empty = document.createElement('div');
-      empty.style.textAlign = 'center';
-      empty.style.color = '#64748b';
-      empty.style.fontWeight = '800';
-      empty.style.padding = '18px 8px';
-      empty.textContent = key ? 'Không tìm thấy kết quả.' : 'Chưa có dữ liệu. Nhập SKU + HSD để lưu.';
-      listEl.appendChild(empty);
-      return;
-    }
-
-    const frag = document.createDocumentFragment();
-
-    filtered.forEach(it => {
-      const d = daysLeft(it.hsd);
-      const st = statusFor(d);
-
-      const card = document.createElement('div');
-      card.className = 'item ' + st.cls;
-
-      const name = document.createElement('div');
-      name.className = 'p-name';
-      name.textContent = it.name || 'Sản phẩm';
-
-      const skuLine = document.createElement('div');
-      const sku = document.createElement('span');
-      sku.className = 'p-sku';
-      sku.textContent = it.sku;
-      skuLine.appendChild(sku);
-
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      meta.innerHTML = 'HSD: <b></b>';
-      meta.querySelector('b').textContent = fmtDMY(it.hsd);
-
-      const status = document.createElement('div');
-      status.className = 't-status ' + st.tcls;
-      status.textContent = st.text;
-
-      const actions = document.createElement('div');
-      actions.className = 'action-btns';
-
-      const btnCopy = document.createElement('div');
-      btnCopy.className = 'icon-btn';
-      btnCopy.title = 'Copy SKU';
-      btnCopy.textContent = '📋';
-      btnCopy.addEventListener('click', async () => {
-        try{
-          await navigator.clipboard.writeText(it.sku);
-          showToast('📋 Đã copy SKU');
-        }catch{
-          showToast('⚠️ Không copy được (trình duyệt chặn)');
-        }
-      });
-
-      const btnEdit = document.createElement('div');
-      btnEdit.className = 'icon-btn';
-      btnEdit.title = 'Sửa';
-      btnEdit.textContent = '✏️';
-      btnEdit.addEventListener('click', () => enterEditMode(it.id));
-
-      const btnDel = document.createElement('div');
-      btnDel.className = 'icon-btn danger';
-      btnDel.title = 'Xoá';
-      btnDel.textContent = '🗑️';
-      btnDel.addEventListener('click', () => deleteById(it.id));
-
-      actions.appendChild(btnCopy);
-      actions.appendChild(btnEdit);
-      actions.appendChild(btnDel);
-
-      card.appendChild(name);
-      card.appendChild(skuLine);
-      card.appendChild(meta);
-      card.appendChild(status);
-      card.appendChild(actions);
-
-      frag.appendChild(card);
-    });
-
-    listEl.appendChild(frag);
-  }
-
-  // ---------- CSV Parsing ----------
-  function detectDelimiter(text){
-    // look at first non-empty line
-    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim() !== '');
-    const first = lines[0] || '';
-    const comma = (first.match(/,/g) || []).length;
-    const semi = (first.match(/;/g) || []).length;
-    return semi > comma ? ';' : ',';
-  }
-
-  function parseCSV(text, delimiter){
-    // Robust-ish CSV parser (supports quotes, delimiter, newlines in quotes)
-    // returns array of rows: string[]
-   
+render();
+</script>
+</body>
+</html>
