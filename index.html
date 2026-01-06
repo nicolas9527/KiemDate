@@ -1,209 +1,189 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="KIỂM DATE">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KIỂM DATE">
+    <title>KIỂM DATE</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, Arial, sans-serif; background: #eaf4e6; padding: 14px; color: #333; -webkit-tap-highlight-color: transparent; }
+        .app { background: #f4faee; border-radius: 22px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 500px; margin: 0 auto; }
+        h1 { text-align: center; color: #2e7d32; margin: 6px 0 20px; font-size: 24px; font-weight: 800; }
+        .input-group { margin-bottom: 16px; position: relative; }
+        label { color: #2e7d32; font-weight: 700; margin-bottom: 6px; display: block; font-size: 14px; }
+        input { width: 100%; height: 50px; font-size: 16px; border-radius: 12px; border: 2px solid #a5d6a7; background: #fff; padding: 0 12px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
+        
+        .suggestions {
+            position: absolute; top: 74px; left: 0; right: 0; 
+            background: #fff; border-radius: 12px; border: 1px solid #a5d6a7;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100;
+            max-height: 200px; overflow-y: auto; display: none;
+        }
+        .suggestion-item { padding: 14px; border-bottom: 1px solid #eee; font-size: 15px; cursor: pointer; }
+        .suggestion-item:active { background: #e8f5e9; }
 
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="manifest.json">
-<title>KIỂM DATE</title>
+        .btns { display: flex; gap: 10px; margin-top: 5px; }
+        .main-btn { flex: 1; height: 50px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .paste { background: #81c784; }
+        .save { background: linear-gradient(#43a047, #2e7d32); }
+        
+        /* SEARCH & TOOLS */
+        .search-container { margin-top: 25px; margin-bottom: 10px; }
+        #searchInput { border-color: #81c784; height: 40px; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%232e7d32" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 10px center; padding-left: 35px; }
+        
+        .tools-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+        .import-btn { background: #fff; border: 1px solid #2e7d32; color: #2e7d32; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; }
+        #sortSelect { padding: 8px; border-radius: 10px; border: 1px solid #a5d6a7; font-size: 13px; color: #2e7d32; flex: 1; }
 
-<style>
-body{margin:0;font-family:-apple-system,Arial;background:#eaf4e6;padding:14px;color:#333}
-.app{background:#f4faee;border-radius:22px;padding:20px;max-width:500px;margin:auto}
-h1{text-align:center;color:#2e7d32;font-size:24px;font-weight:800}
-
-.input-group{margin-bottom:16px;position:relative}
-label{color:#2e7d32;font-weight:700;font-size:14px;margin-bottom:6px;display:block}
-input{width:100%;height:50px;border-radius:12px;border:2px solid #a5d6a7;padding:0 12px;font-size:16px}
-
-.suggestions{
-position:absolute;top:74px;left:0;right:0;
-background:#fff;border-radius:12px;border:1px solid #a5d6a7;
-box-shadow:0 10px 25px rgba(0,0,0,.1);display:none;z-index:10
-}
-.suggestion-item{padding:12px;border-bottom:1px solid #eee;cursor:pointer}
-.suggestion-item:last-child{border-bottom:none}
-.suggestion-item b{color:#1b5e20}
-.suggestion-item small{color:#666}
-
-.btns{display:flex;gap:10px}
-.main-btn{flex:1;height:50px;border:none;border-radius:12px;font-weight:700;color:#fff}
-.paste{background:#81c784}
-.save{background:linear-gradient(#43a047,#2e7d32)}
-
-.tools-container{display:flex;justify-content:space-between;align-items:center;margin:20px 0}
-.import-btn{background:#fff;border:1px solid #2e7d32;color:#2e7d32;padding:8px 12px;border-radius:10px;font-weight:700}
-#sortSelect{padding:8px 12px;border-radius:10px;border:1px solid #a5d6a7}
-
-.item{background:#fff;border-radius:15px;padding:15px;margin-bottom:12px;border-left:6px solid #a5d6a7;position:relative;padding-right:50px}
-.warn30{border-left-color:#fbc02d}
-.warn7{border-left-color:#c62828}
-
-.p-name{font-weight:700;color:#1b5e20;font-size:17px}
-.p-sku{font-family:monospace;font-size:12px;background:#f0f0f0;padding:2px 6px;border-radius:4px}
-.w30{color:#f9a825;font-weight:700}
-.w7{color:#c62828;font-weight:700}
-.expired{color:#b71c1c;font-weight:900}
-
-.icon-btn{position:absolute;right:10px;width:34px;height:34px;border:none;border-radius:10px}
-.del-btn{top:12px;background:#ffeeee;color:#d32f2f;font-size:18px}
-.copy-btn{bottom:12px;background:#e8f5e9;color:#2e7d32}
-</style>
+        .item { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 6px solid #a5d6a7; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .icon-btn { position: absolute; right: 10px; width: 34px; height: 34px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; }
+        .del-btn { top: 12px; background: #ffeeee; color: #d32f2f; }
+        .copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
+        
+        .warn-today { border-left-color: #ff5722; background: #fff5f2; }
+        .warn7 { border-left-color: #c62828; }
+        .warn30 { border-left-color: #fbc02d; }
+        .expired-txt { color: #b71c1c; font-weight: 900; }
+        .today-txt { color: #ff5722; font-weight: 800; }
+        .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; margin-bottom: 4px; padding-right: 30px;}
+        .p-sku { color: #666; font-size: 12px; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    </style>
 </head>
-
 <body>
 <div class="app">
-<h1>📅 KIỂM DATE</h1>
+    <h1>📅 KIỂM DATE</h1>
+    
+    <div class="input-group">
+        <label>Mã SKU</label>
+        <input id="sku" type="text" placeholder="Nhập mã..." autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
+    </div>
+    <div class="input-group"><label>Tên sản phẩm</label><input id="name" type="text" placeholder="Tên sản phẩm"></div>
+    <div class="input-group"><label>Hạn sử dụng</label><input id="hsd" type="date"></div>
+    
+    <div class="btns">
+        <button class="main-btn paste" onclick="smartPaste()">📋 Dán mã</button>
+        <button class="main-btn save" onclick="save()">💾 Lưu lại</button>
+    </div>
 
-<div class="input-group">
-<label>Mã SKU</label>
-<input id="sku" placeholder="Nhập hoặc dán mã">
-<div id="suggestions" class="suggestions"></div>
-</div>
+    <div class="search-container">
+        <input id="searchInput" type="text" placeholder="Tìm tên hoặc SKU trong danh sách..." oninput="render()">
+    </div>
 
-<div class="input-group">
-<label>Tên sản phẩm</label>
-<input id="name" placeholder="Tên tự hiện nếu đã lưu">
-</div>
+    <div class="tools-container">
+        <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleFile(this)">
+        <button class="import-btn" onclick="document.getElementById('csvFile').click()">📥 Nhập File</button>
+        <select id="sortSelect" onchange="render()">
+            <option value="date-asc">Hạn dùng (Gần → Xa)</option>
+            <option value="name-asc">Tên (A → Z)</option>
+        </select>
+    </div>
 
-<div class="input-group">
-<label>Hạn sử dụng</label>
-<input id="hsd" type="date">
-</div>
-
-<div class="btns">
-<button class="main-btn paste" onclick="smartPaste()">📋 Dán mã</button>
-<button class="main-btn save" onclick="save()">💾 Lưu lại</button>
-</div>
-
-<div class="tools-container">
-<input type="file" id="csvFile" accept=".csv,.txt" hidden onchange="handleFile(this)">
-<button class="import-btn" onclick="csvFile.click()">📥 Nhập File</button>
-
-<select id="sortSelect" onchange="render()">
-<option value="date-asc">Hạn dùng (Gần → Xa)</option>
-<option value="date-desc">Hạn dùng (Xa → Gần)</option>
-<option value="name-asc">Tên (A → Z)</option>
-<option value="name-desc">Tên (Z → A)</option>
-</select>
-</div>
-
-<div class="input-group">
-<input id="search" placeholder="🔍 Tìm theo tên hoặc SKU" oninput="render()">
-</div>
-
-<div id="list"></div>
+    <div id="list"></div>
 </div>
 
 <script>
-if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+    let data = JSON.parse(localStorage.getItem('dates')||'[]');
+    let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
+    const skuInput = document.getElementById('sku'), nameInput = document.getElementById('name'), hsdInput = document.getElementById('hsd'), sugDiv = document.getElementById('suggestions');
 
-let data=JSON.parse(localStorage.getItem('dates')||'[]')
-let skuMap=JSON.parse(localStorage.getItem('skuMap')||'{}')
+    // GỢI Ý KHI NHẬP SKU
+    skuInput.addEventListener('input', () => {
+        const val = skuInput.value.trim().toLowerCase();
+        sugDiv.innerHTML = '';
+        if (val.length >= 3) {
+            const matches = Object.keys(skuMap).filter(s => s.toLowerCase().includes(val));
+            if (matches.length > 0) {
+                sugDiv.style.display = 'block';
+                matches.forEach(m => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.innerText = skuMap[m];
+                    item.onclick = () => {
+                        skuInput.value = m;
+                        nameInput.value = skuMap[m];
+                        sugDiv.style.display = 'none';
+                        hsdInput.focus();
+                    };
+                    sugDiv.appendChild(item);
+                });
+            } else { sugDiv.style.display = 'none'; }
+        } else { sugDiv.style.display = 'none'; }
+        if(skuMap[skuInput.value.trim()]) nameInput.value = skuMap[skuInput.value.trim()];
+    });
 
-const skuInput=sku,nameInput=name,hsdInput=hsd,sug=suggestions
+    // CHỐNG TRÙNG VÀ LƯU
+    function save() {
+        const s = skuInput.value.trim(), n = nameInput.value.trim(), h = hsdInput.value;
+        if(!s || !h) return alert("⚠️ Thiếu SKU hoặc HSD!");
+        
+        const isDup = data.some(i => i.sku === s && i.hsd === h);
+        if(isDup) return alert("⚠️ Mã này với hạn dùng này đã có rồi!");
 
-/* ===== CSV IMPORT (FIX BOM) ===== */
-function handleFile(input){
-const file=input.files[0];if(!file)return
-const reader=new FileReader()
-reader.onload=e=>{
-e.target.result.split(/\r?\n/).forEach(l=>{
-const p=l.split(/,|;/)
-if(p.length>=2){
-const sku=String(p[0]).replace(/\ufeff/g,'').trim()
-const name=String(p[1]).trim()
-if(sku&&name&&sku.toLowerCase()!=='sku')skuMap[sku]=name
-}})
-localStorage.setItem('skuMap',JSON.stringify(skuMap))
-alert("✅ Nhập file thành công")
-input.value=''
-}
-reader.readAsText(file)
-}
+        skuMap[s] = n || "Sản phẩm mới";
+        data.push({ sku: s, name: skuMap[s], hsd: h });
+        localStorage.setItem('dates', JSON.stringify(data));
+        localStorage.setItem('skuMap', JSON.stringify(skuMap));
+        
+        skuInput.value = ''; nameInput.value = ''; hsdInput.value = '';
+        render();
+    }
 
-/* ===== SKU SUGGEST ===== */
-skuInput.oninput=()=>{
-const v=skuInput.value.trim().toLowerCase()
-sug.innerHTML=''
-if(v.length>=3){
-Object.keys(skuMap).filter(k=>k.toLowerCase().includes(v)).forEach(k=>{
-const d=document.createElement('div')
-d.className='suggestion-item'
-d.innerHTML=`<b>${k}</b><br><small>${skuMap[k]}</small>`
-d.onclick=()=>{skuInput.value=k;nameInput.value=skuMap[k];sug.style.display='none';hsdInput.focus()}
-sug.appendChild(d)
-})
-sug.style.display=sug.children.length?'block':'none'
-}else sug.style.display='none'
-if(skuMap[skuInput.value])nameInput.value=skuMap[skuInput.value]
-}
+    // NHẬP FILE CSV
+    function handleFile(input) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const lines = e.target.result.split(/\r?\n/);
+            lines.forEach(line => {
+                const p = line.split(/[,;]/);
+                if(p.length >= 2 && p[0].toLowerCase() !== 'sku') skuMap[p[0].trim()] = p[1].trim();
+            });
+            localStorage.setItem('skuMap', JSON.stringify(skuMap));
+            alert("✅ Đã cập nhật danh sách gợi ý!");
+        };
+        reader.readAsText(input.files[0]);
+    }
 
-document.addEventListener('click',e=>{if(e.target!==skuInput)sug.style.display='none'})
+    async function smartPaste() {
+        const text = await navigator.clipboard.readText();
+        if(text) { skuInput.value = text.trim(); if(skuMap[text.trim()]) nameInput.value = skuMap[text.trim()]; hsdInput.focus(); }
+    }
 
-async function smartPaste(){
-try{
-const t=(await navigator.clipboard.readText()).trim()
-skuInput.value=t
-if(skuMap[t])nameInput.value=skuMap[t]
-hsdInput.focus()
-}catch{}
-}
+    function deleteItem(index) { if(confirm("Xóa mục này?")) { data.splice(index, 1); localStorage.setItem('dates', JSON.stringify(data)); render(); } }
 
-/* ===== SAVE (ANTI DUPLICATE) ===== */
-function save(){
-if(!skuInput.value||!hsdInput.value)return alert("⚠️ Thiếu thông tin!")
-const sku=skuInput.value.trim(),name=(nameInput.value||'Sản phẩm mới').trim(),hsd=hsdInput.value
-if(data.find(i=>i.sku===sku&&i.hsd===hsd))return alert("⚠️ Đã tồn tại!")
-skuMap[sku]=name
-data.push({sku,name,hsd})
-localStorage.setItem('dates',JSON.stringify(data))
-localStorage.setItem('skuMap',JSON.stringify(skuMap))
-skuInput.value=nameInput.value=hsdInput.value=''
-render()
-}
+    // RENDER DANH SÁCH + TÌM KIẾM
+    function render() {
+        const listDiv = document.getElementById('list');
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        listDiv.innerHTML = '';
+        
+        let filtered = data.filter(i => i.name.toLowerCase().includes(search) || i.sku.toLowerCase().includes(search));
+        
+        const sort = document.getElementById('sortSelect').value;
+        filtered.sort((a,b) => sort === 'date-asc' ? new Date(a.hsd)-new Date(b.hsd) : a.name.localeCompare(b.name,'vi'));
 
-function del(i){if(confirm("Xóa mục này?")){data.splice(i,1);localStorage.setItem('dates',JSON.stringify(data));render()}}
-function copy(t,b){navigator.clipboard.writeText(t);b.innerHTML='✔';setTimeout(()=>b.innerHTML='📋',800)}
+        filtered.forEach((i, idx) => {
+            const diff = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
+            let cls = '', txt = `Còn ${diff} ngày`, tcls = '';
+            
+            if (diff < 0) { cls = 'warn7'; txt = 'ĐÃ HẾT HẠN'; tcls = 'expired-txt'; }
+            else if (diff === 0) { cls = 'warn-today'; txt = '🔥 Hết hạn hôm nay'; tcls = 'today-txt'; }
+            else if (diff <= 7) { cls = 'warn7'; txt = `⚠️ Còn ${diff} ngày`; }
+            else if (diff <= 30) { cls = 'warn30'; txt = `⏰ Còn ${diff} ngày`; }
 
-/* ===== RENDER (SEARCH + TODAY FIX) ===== */
-function render(){
-const list=document.getElementById('list')
-list.innerHTML=''
-const key=document.getElementById('search').value.toLowerCase()
-const sort=document.getElementById('sortSelect').value
-
-data.sort((a,b)=>{
-if(sort.includes('date'))return sort==='date-asc'?new Date(a.hsd)-new Date(b.hsd):new Date(b.hsd)-new Date(a.hsd)
-return sort==='name-asc'?a.name.localeCompare(b.name,'vi'):b.name.localeCompare(a.name,'vi')
-})
-
-data.filter(i=>i.name.toLowerCase().includes(key)||i.sku.toLowerCase().includes(key))
-.forEach((i,idx)=>{
-const d=Math.ceil((new Date(i.hsd+'T23:59:59')-Date.now())/86400000)
-let cls='',txt='',tc=''
-if(d<0){cls='warn7';txt='HẾT HẠN';tc='expired'}
-else if(d===0){cls='warn7';txt='⚠️ HẾT HẠN HÔM NAY';tc='w7'}
-else if(d<=7){cls='warn7';txt=`⚠️ Còn ${d} ngày`;tc='w7'}
-else if(d<=30){cls='warn30';txt=`⏰ Còn ${d} ngày`;tc='w30'}
-else txt=`Còn ${d} ngày`
-
-list.innerHTML+=`
-<div class="item ${cls}">
-<div class="p-name">${i.name}</div>
-<div><span class="p-sku">${i.sku}</span></div>
-<div>HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
-<div class="${tc}" style="margin-top:6px">${txt}</div>
-<button class="icon-btn del-btn" onclick="del(${idx})">×</button>
-<button class="icon-btn copy-btn" onclick="copy('${i.sku}',this)">📋</button>
-</div>`
-})
-}
-render()
+            listDiv.innerHTML += `
+            <div class="item ${cls}">
+                <div class="p-name">${i.name}</div>
+                <div style="margin-bottom:5px"><span class="p-sku">${i.sku}</span></div>
+                <div style="font-size:14px">HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
+                <div class="${tcls}" style="margin-top:5px; font-size:13px; font-weight:600">${txt}</div>
+                <button class="icon-btn del-btn" onclick="deleteItem(${data.indexOf(i)})">×</button>
+            </div>`;
+        });
+    }
+    render();
 </script>
 </body>
 </html>
