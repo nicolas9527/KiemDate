@@ -12,49 +12,32 @@
     
     <title>KIỂM DATE</title>
     <style>
-        :root { 
-            --primary: #1976d2; 
-            --secondary: #64b5f6; 
-            --bg: #f0f4f8; 
-            --card: #ffffff; 
-        }
-        
+        :root { --primary: #1976d2; --secondary: #64b5f6; --bg: #f0f4f8; --card: #ffffff; }
         body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 12px; color: #333; -webkit-font-smoothing: antialiased; }
         .app { max-width: 500px; margin: 0 auto; }
         
         h1 { text-align: center; color: var(--primary); font-size: 22px; margin: 10px 0; font-weight: 800; }
         .input-box { background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 15px; }
         
-        .input-group { margin-bottom: 15px; width: 100%; }
+        .input-group { margin-bottom: 15px; width: 100%; position: relative; }
         label { color: var(--primary); font-weight: 700; font-size: 13px; display: block; margin: 0 0 6px 8px; }
         
-        /* ĐỒNG BỘ CHIỀU DÀI VÀ CĂN GIỮA */
-        input[type="text"], 
-        input[type="date"] { 
-            width: 100%; 
-            height: 50px; 
-            border-radius: 15px; 
-            border: 1.5px solid #e1e8ed; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            outline: none; 
-            background: #f9fbff; 
-            text-align: center; 
-            display: block;
-            line-height: 50px;
+        input[type="text"], input[type="date"] { 
+            width: 100%; height: 50px; border-radius: 15px; border: 1.5px solid #e1e8ed; 
+            padding: 0; box-sizing: border-box; font-size: 16px; outline: none; 
+            background: #f9fbff; text-align: center; display: block; line-height: 50px;
         }
-        
-        /* Fix triệt để cho ô date trên mọi trình duyệt */
-        input[type="date"] {
-            -webkit-appearance: none;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
+        input[type="date"] { -webkit-appearance: none; min-height: 50px; }
         input:focus { border-color: var(--secondary); background: #fff; }
+
+        /* VÙNG GỢI Ý */
+        .suggestions { 
+            position: absolute; top: 75px; left: 0; right: 0; background: #fff; 
+            border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
+            z-index: 100; max-height: 200px; overflow-y: auto; display: none; border: 1px solid #eee;
+        }
+        .sug-item { padding: 14px; border-bottom: 1px solid #f9f9f9; font-size: 15px; color: #333; text-align: left; }
+        .sug-item:active { background: #f0f7ff; }
 
         .btn-row { display: flex; gap: 10px; margin-top: 5px; }
         .btn { flex: 1; height: 50px; border: none; border-radius: 15px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; color: #fff; }
@@ -72,17 +55,7 @@
         .p-sku { font-size: 11px; background: #e3f2fd; padding: 3px 8px; border-radius: 6px; color: #1565c0; font-family: monospace; display: inline-block; margin-bottom: 5px; }
         
         .action-btns { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
-        
-        .copy-box { 
-            width: 42px; height: 42px; 
-            border-radius: 12px; 
-            background: #e3f2fd; 
-            border: 1px solid #bbdefb;
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .copy-box:active { background: #bbdefb; transform: scale(0.9); }
+        .copy-box { width: 42px; height: 42px; border-radius: 12px; background: #e3f2fd; border: 1px solid #bbdefb; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .copy-icon { width: 22px; height: 22px; color: var(--primary); }
         .del-text { color: #d32f2f; font-size: 22px; font-weight: bold; cursor: pointer; opacity: 0.4; line-height: 1; }
 
@@ -101,7 +74,8 @@
     <div class="input-box">
         <div class="input-group">
             <label>Mã SKU / Barcode</label>
-            <input id="sku" type="text" placeholder="Nhập hoặc quét mã...">
+            <input id="sku" type="text" placeholder="Nhập hoặc quét mã..." oninput="handleSkuInput()">
+            <div id="suggestions" class="suggestions"></div>
         </div>
         <div class="input-group">
             <label>Tên sản phẩm</label>
@@ -121,7 +95,7 @@
         <div class="manager-row">
             <input type="file" id="csvIn" hidden onchange="importCSV(this)">
             <button class="tool-btn" onclick="document.getElementById('csvIn').click()">📥 NHẬP</button>
-            <button class="tool-btn btn-save" style="background: var(--primary); color:#fff" onclick="exportCSV()">📤 XUẤT</button>
+            <button class="tool-btn" style="background: var(--primary); color:#fff" onclick="exportCSV()">📤 XUẤT</button>
         </div>
         <input id="search" class="search-bar" type="text" placeholder="Tìm tên hoặc SKU..." oninput="render()">
     </div>
@@ -132,7 +106,35 @@
 <script>
     let data = JSON.parse(localStorage.getItem('dates')||'[]');
     let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
-    const skuI = document.getElementById('sku'), nameI = document.getElementById('name'), hsdI = document.getElementById('hsd');
+    const skuI = document.getElementById('sku'), nameI = document.getElementById('name'), hsdI = document.getElementById('hsd'), sugD = document.getElementById('suggestions');
+
+    // XỬ LÝ GỢI Ý KHI NHẬP SKU
+    function handleSkuInput() {
+        const val = skuI.value.trim();
+        sugD.innerHTML = '';
+        if (val.length >= 2) {
+            const matches = Object.keys(skuMap).filter(s => s.toLowerCase().includes(val.toLowerCase()));
+            if (matches.length > 0) {
+                sugD.style.display = 'block';
+                matches.slice(0, 5).forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'sug-item';
+                    div.innerHTML = `<b>${m}</b><br><small>${skuMap[m]}</small>`;
+                    div.onclick = () => { 
+                        skuI.value = m; 
+                        nameI.value = skuMap[m]; 
+                        sugD.style.display = 'none'; 
+                        hsdI.focus(); 
+                    };
+                    sugD.appendChild(div);
+                });
+            } else { sugD.style.display = 'none'; }
+        } else { sugD.style.display = 'none'; }
+        if(skuMap[val]) nameI.value = skuMap[val];
+    }
+
+    // Đóng gợi ý khi click ra ngoài
+    document.addEventListener('click', (e) => { if (e.target !== skuI) sugD.style.display = 'none'; });
 
     function save() {
         const s = skuI.value.trim(), n = nameI.value.trim(), h = hsdI.value;
@@ -188,8 +190,8 @@
     async function smartPaste() {
         try {
             const t = await navigator.clipboard.readText();
-            if(t) { skuI.value = t.trim(); if(skuMap[t.trim()]) nameI.value = skuMap[t.trim()]; hsdI.focus(); }
-        } catch (err) { alert("Không thể dán từ clipboard."); }
+            if(t) { skuI.value = t.trim(); handleSkuInput(); hsdI.focus(); }
+        } catch (err) { alert("Vui lòng cấp quyền clipboard."); }
     }
 
     function exportCSV() {
@@ -210,7 +212,8 @@
                 }
             });
             localStorage.setItem('dates', JSON.stringify(data));
-            render(); alert("Đã nạp xong!");
+            localStorage.setItem('skuMap', JSON.stringify(skuMap));
+            render(); alert("Đã nhập dữ liệu!");
         };
         r.readAsText(input.files[0]);
     }
