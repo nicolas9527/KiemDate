@@ -13,7 +13,7 @@
   <title>KIỂM DATE</title>
 
   <style>
-    :root{
+    :root {
       --primary:#1976d2; --secondary:#64b5f6; --bg:#f0f4f8; --card:#ffffff;
       --danger:#d32f2f; --warn:#ef6c00; --ok:#1b5e20;
     }
@@ -27,15 +27,15 @@
       -webkit-font-smoothing:antialiased;
     }
     .app{ max-width:520px; margin:0 auto; }
+
     h1{
       text-align:center;
       color:var(--primary);
       font-size:22px;
-      margin:10px 0 10px;
+      margin:10px 0 12px;
       font-weight:900;
       letter-spacing:0.2px;
     }
-    /* ✅ ĐÃ XOÁ DÒNG CHỮ DƯỚI TIÊU ĐỀ: không còn .sub trong HTML/CSS */
 
     .input-box{
       background:var(--card);
@@ -44,7 +44,7 @@
       box-shadow:0 4px 20px rgba(0,0,0,0.05);
       margin-bottom:12px;
     }
-    .input-group{ margin-bottom:14px; width:100%; position:relative; }
+    .input-group{ margin-bottom:14px; width:100%; position:relativerelative; }
     label{
       color:var(--primary);
       font-weight:800;
@@ -150,7 +150,6 @@
     }
     .tool-btn.primary{ background:var(--primary); color:#fff; }
     .tool-btn.danger{ border-color:var(--danger); color:var(--danger); }
-    .tool-btn.gray{ border-color:#94a3b8; color:#334155; }
 
     .search-bar{
       width:100%;
@@ -169,12 +168,12 @@
       background:#fff;
       border-radius:20px;
       padding:16px;
-      padding-right:78px;      /* chừa chỗ cho cột icon */
+      padding-right:78px;
       margin-bottom:12px;
       position:relative;
       border-left:6px solid #d1d9e0;
       box-shadow:0 2px 12px rgba(0,0,0,0.04);
-      overflow:hidden;         /* ✅ chặn icon tràn khỏi bo góc */
+      overflow:hidden;
     }
     .c-red{ border-left-color:var(--danger); background:#fffbfb; }
     .c-orange{ border-left-color:#ff9800; background:#fffaf2; }
@@ -215,7 +214,7 @@
       flex-direction:column;
       gap:8px;
       align-items:center;
-      width:56px;              /* khóa bề ngang để không “lòi” */
+      width:56px;
     }
     .icon-btn{
       width:38px;
@@ -279,20 +278,6 @@
     .modal h2{ margin:6px 4px 8px; font-size:16px; color:#0f172a; font-weight:1000; }
     .modal p{ margin:0 4px 12px; color:#6b7280; font-size:13px; font-weight:800; }
     .modal .btn-row{ margin-top:10px; }
-
-    .debugbox{
-      display:none;
-      background:#0b1220;
-      color:#dbeafe;
-      border-radius:16px;
-      padding:12px;
-      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:12px;
-      white-space:pre-wrap;
-      word-break:break-word;
-      margin:10px 0 0;
-      border:1px solid rgba(148,163,184,0.25);
-    }
   </style>
 </head>
 
@@ -326,8 +311,6 @@
         <button id="btnCancelEdit" class="btn btn-cancel" type="button">↩️ Huỷ sửa</button>
         <button id="btnDeleteEdit" class="btn btn-danger" type="button">🗑️ Xoá dòng</button>
       </div>
-
-      <div id="debugBox" class="debugbox"></div>
     </div>
 
     <div class="summary">
@@ -343,7 +326,6 @@
         <button id="btnImport" class="tool-btn" type="button">📥 NHẬP CSV</button>
         <button id="btnExport" class="tool-btn primary" type="button">📤 XUẤT CSV</button>
         <button id="btnClearAll" class="tool-btn danger" type="button">🧹 XOÁ ALL</button>
-        <button id="btnDebug" class="tool-btn gray" type="button">📌 DEBUG</button>
       </div>
       <input id="search" class="search-bar" type="text" placeholder="Tìm tên / SKU / HSD..." />
     </div>
@@ -373,7 +355,6 @@
   const sugD = document.getElementById('suggestions');
   const listEl = document.getElementById('list');
   const searchI = document.getElementById('search');
-  const debugBox = document.getElementById('debugBox');
 
   const btnPaste = document.getElementById('btnPaste');
   const btnSave = document.getElementById('btnSave');
@@ -384,7 +365,6 @@
   const btnImport = document.getElementById('btnImport');
   const btnExport = document.getElementById('btnExport');
   const btnClearAll = document.getElementById('btnClearAll');
-  const btnDebug = document.getElementById('btnDebug');
   const csvIn = document.getElementById('csvIn');
 
   const sumTotal = document.getElementById('sumTotal');
@@ -407,25 +387,6 @@
   let data = [];     // {id, sku, name, hsd, createdAt}
   let skuMap = {};   // {sku: name}
   let editingId = null;
-
-  // ========= Debug log =========
-  const LOG = [];
-  function log(...args){
-    const msg = args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
-    LOG.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
-    if(LOG.length > 250) LOG.shift();
-    if(debugBox.style.display === 'block') debugBox.textContent = LOG.join('\n');
-    console.log('[KIEMDATE]', ...args);
-  }
-
-  window.addEventListener('error', (e) => {
-    log('JS ERROR:', e.message, 'at', (e.filename||'') + ':' + (e.lineno||''));
-    showToast('❌ Có lỗi JS (bấm DEBUG để xem)');
-  });
-  window.addEventListener('unhandledrejection', (e) => {
-    log('PROMISE REJECTION:', e.reason);
-    showToast('❌ Có lỗi (bấm DEBUG để xem)');
-  });
 
   // ========= Utils =========
   const now = () => Date.now();
@@ -480,7 +441,7 @@
     if(!v) return '';
     if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
 
-    let m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/); // dd/mm/yyyy
+    let m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
     if(m){
       const dd=String(m[1]).padStart(2,'0');
       const mm=String(m[2]).padStart(2,'0');
@@ -488,7 +449,7 @@
       return `${yy}-${mm}-${dd}`;
     }
 
-    m = v.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/); // yyyy/mm/dd
+    m = v.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
     if(m){
       const yy=m[1];
       const mm=String(m[2]).padStart(2,'0');
@@ -537,17 +498,14 @@
     try{
       localStorage.setItem(KEY_V2, JSON.stringify(data));
       localStorage.setItem(KEY_V2_MAP, JSON.stringify(skuMap));
-      log('Saved:', {items:data.length, map:Object.keys(skuMap).length});
       return true;
     }catch(e){
-      log('saveStorage FAIL:', e?.message || e);
       showToast('❌ Không lưu được (localStorage bị chặn)');
       return false;
     }
   }
 
   function loadStorage(){
-    // ưu tiên V2
     const v2 = localStorage.getItem(KEY_V2);
     const v2m = localStorage.getItem(KEY_V2_MAP);
 
@@ -555,11 +513,9 @@
       try { data = JSON.parse(v2) || []; } catch { data = []; }
       try { skuMap = JSON.parse(v2m || '{}') || {}; } catch { skuMap = {}; }
       if(!Array.isArray(data)) data = [];
-      log('Loaded v2', {items:data.length});
       return;
     }
 
-    // migrate từ bản cũ: dates + skuMap
     const oldDates = localStorage.getItem('dates');
     const oldMap = localStorage.getItem('skuMap');
 
@@ -582,35 +538,30 @@
       });
 
       saveStorage();
-      showToast('✅ Đã nâng cấp dữ liệu (bản cũ → bản mới)');
-      log('Migrated', {items:data.length});
+      showToast('✅ Đã nâng cấp dữ liệu');
       return;
     }
 
     data = [];
     skuMap = {};
-    log('No existing data');
   }
 
   // ========= Suggestions =========
   function hideSuggestions(){ sugD.style.display='none'; sugD.innerHTML=''; }
 
   function getSuggestionPool(){
-    const pool = new Map(); // sku -> name
-
-    Object.keys(skuMap || {}).forEach(sku => {
-      const name = trim(skuMap[sku] || '');
-      if(sku) pool.set(sku, name);
+    const pool = new Map();
+    Object.keys(skuMap || {}).forEach(s => {
+      const n = trim(skuMap[s] || '');
+      if(s) pool.set(s, n);
     });
-
     (Array.isArray(data) ? data : []).forEach(it => {
-      const sku = trim(it?.sku);
-      const name = trim(it?.name);
-      if(!sku) return;
-      if(!pool.has(sku)) pool.set(sku, name);
-      if(pool.has(sku) && !pool.get(sku) && name) pool.set(sku, name);
+      const s = trim(it?.sku);
+      const n = trim(it?.name);
+      if(!s) return;
+      if(!pool.has(s)) pool.set(s, n);
+      if(pool.has(s) && !pool.get(s) && n) pool.set(s, n);
     });
-
     return Array.from(pool.entries()).map(([sku, name]) => ({ sku, name }));
   }
 
@@ -619,12 +570,10 @@
     sugD.innerHTML = '';
 
     if(skuMap[val]) nameI.value = skuMap[val];
-
     if(val.length < 2){ hideSuggestions(); return; }
 
     const q = val.toLowerCase();
     const pool = getSuggestionPool();
-
     const matches = pool
       .filter(x => x.sku.toLowerCase().includes(q) || (x.name || '').toLowerCase().includes(q))
       .slice(0, 8);
@@ -634,23 +583,15 @@
     matches.forEach(m => {
       const div = document.createElement('div');
       div.className = 'sug-item';
-
-      const b = document.createElement('b');
-      b.textContent = m.sku;
-
-      const sm = document.createElement('small');
-      sm.textContent = m.name || '(chưa có tên)';
-
-      div.appendChild(b);
-      div.appendChild(sm);
-
+      const b = document.createElement('b'); b.textContent = m.sku;
+      const sm = document.createElement('small'); sm.textContent = m.name || '(chưa có tên)';
+      div.appendChild(b); div.appendChild(sm);
       div.addEventListener('click', () => {
         skuI.value = m.sku;
         if(m.name) nameI.value = m.name;
         hideSuggestions();
         hsdI.focus();
       });
-
       sugD.appendChild(div);
     });
 
@@ -673,7 +614,6 @@
     editRow.style.display = 'flex';
     hideSuggestions();
     showToast('✏️ Đang sửa dòng');
-    log('Enter edit', {id});
   }
 
   function exitEdit(){
@@ -682,16 +622,12 @@
     editRow.style.display = 'none';
     skuI.value=''; nameI.value=''; hsdI.value='';
     hideSuggestions();
-    log('Exit edit');
   }
 
   // ========= Upsert =========
   async function upsert(){
-    log('Upsert click');
-
     if(!storageAvailable()){
       showToast('❌ localStorage bị chặn (mở Safari/Chrome thật, không ẩn danh/webview)');
-      log('storageAvailable: FALSE');
       return;
     }
 
@@ -719,7 +655,7 @@
       }
     }
 
-    if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')){
+    if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) {
       skuMap[s] = trim(nameI.value) || skuMap[s] || finalName;
     }
 
@@ -1001,7 +937,7 @@
 
       const idxSku = hasHeader ? colIndex(['sku','barcode','ma san pham','mã sản phẩm'], 0) : 0;
       const idxName = hasHeader ? colIndex(['name','ten san pham','tên sản phẩm'], 1) : 1;
-      const idxHsd = hasHeader ? colIndex(['hsd','expiry','exp','han su dung','hạn sử dụng'], 2) : 2;
+      const idxHsd  = hasHeader ? colIndex(['hsd','expiry','exp','han su dung','hạn sử dụng'], 2) : 2;
 
       let mapAdded = 0;
       let added = 0, updated = 0, skipped = 0;
@@ -1012,13 +948,11 @@
 
         const s = trim(row[idxSku] ?? '');
         const n = trim(row[idxName] ?? '');
-
         if(!s){ skipped++; continue; }
 
         const rawH = row[idxHsd];
         const h = normalizeDateToISO(rawH ?? '');
 
-        // CSV 2 cột: SKU + NAME (không có HSD)
         if(!rawH || !trim(rawH) || !validISODate(h)){
           const finalName = n || skuMap[s] || 'Sản phẩm mới';
           if(!skuMap[s] || (n && n !== skuMap[s])) {
@@ -1028,7 +962,6 @@
           continue;
         }
 
-        // CSV 3 cột: SKU + NAME + HSD
         const finalName = n || skuMap[s] || 'Sản phẩm mới';
         if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
 
@@ -1044,16 +977,10 @@
 
       saveStorage();
       render();
-      showToast(`✅ Import xong: Danh mục +${mapAdded}, HSD +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
-      log('Import done', {mapAdded, added, updated, skipped});
+      showToast(`✅ Import: Danh mục +${mapAdded}, HSD +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
     }catch(e){
-      log('Import FAIL:', e?.message || e);
-      showToast('❌ Import lỗi (bấm DEBUG xem log)');
+      showToast('❌ Import lỗi');
     }
-  }
-
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   function exportCSV(){
@@ -1074,26 +1001,8 @@
       setTimeout(() => URL.revokeObjectURL(url), 1500);
 
       showToast('📤 Đã xuất CSV');
-      log('Export download OK');
     }catch(e){
-      log('Export download FAIL:', e?.message || e);
-      try{
-        const out = [...data].sort((a,b) => a.hsd.localeCompare(b.hsd));
-        let csv = '\uFEFF' + ['sku','name','hsd'].join(',') + '\n';
-        out.forEach(it => {
-          csv += [toCSVCell(it.sku), toCSVCell(it.name), toCSVCell(it.hsd)].join(',') + '\n';
-        });
-
-        const win = window.open('', '_blank');
-        if(!win){ showToast('❌ Bị chặn mở tab. Hãy mở bằng Safari/Chrome'); return; }
-        win.document.title = 'kiem_date.csv (copy)';
-        win.document.write('<pre style="white-space:pre-wrap;font-family:monospace;">' + escapeHtml(csv) + '</pre>');
-        showToast('📤 Mở CSV để copy/share');
-        log('Export fallback open tab OK');
-      }catch(e2){
-        log('Export fallback FAIL:', e2?.message || e2);
-        showToast('❌ Không xuất được (bấm DEBUG xem log)');
-      }
+      showToast('❌ Không xuất được');
     }
   }
 
@@ -1106,9 +1015,7 @@
       updateSuggestions();
       hsdI.focus();
       showToast('📋 Đã dán SKU');
-      log('Paste OK');
     }catch(e){
-      log('Clipboard FAIL:', e?.message || e);
       showToast('⚠️ Clipboard bị chặn');
     }
   }
@@ -1148,24 +1055,14 @@
     render();
     exitEdit();
     showToast('🧹 Đã xoá toàn bộ');
-    log('Clear ALL');
-  });
-
-  btnDebug.addEventListener('click', () => {
-    const on = debugBox.style.display !== 'block';
-    debugBox.style.display = on ? 'block' : 'none';
-    debugBox.textContent = LOG.join('\n') || '(Chưa có log)';
-    showToast(on ? '📌 DEBUG: ON' : '📌 DEBUG: OFF', 900);
   });
 
   // ========= Init =========
-  log('Init. storageAvailable =', storageAvailable());
   if(!storageAvailable()){
     showToast('⚠️ localStorage bị chặn (mở Safari/Chrome thật, không ẩn danh/webview)', 2400);
   }
   loadStorage();
   render();
-  showToast('✅ Sẵn sàng');
 })();
 </script>
 </body>
