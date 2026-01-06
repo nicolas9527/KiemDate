@@ -8,45 +8,52 @@
     <title>KIỂM DATE PRO</title>
     <style>
         :root { --primary: #2e7d32; --secondary: #81c784; --bg: #f0f4f0; --card: #ffffff; }
-        body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 12px; color: #333; }
+        body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 12px; color: #333; -webkit-font-smoothing: antialiased; }
         .app { max-width: 500px; margin: 0 auto; }
         
-        /* Header & Input */
-        h1 { text-align: center; color: var(--primary); font-size: 22px; margin: 10px 0; }
-        .input-box { background: var(--card); border-radius: 18px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        h1 { text-align: center; color: var(--primary); font-size: 22px; margin: 10px 0; letter-spacing: -0.5px; }
+        .input-box { background: var(--card); border-radius: 20px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .input-group { margin-bottom: 12px; position: relative; }
         label { color: var(--primary); font-weight: 700; font-size: 13px; display: block; margin: 0 0 5px 5px; }
-        input { width: 100%; height: 46px; border-radius: 10px; border: 1.5px solid #ddd; padding: 0 12px; box-sizing: border-box; font-size: 16px; outline: none; }
+        input { width: 100%; height: 48px; border-radius: 12px; border: 1.5px solid #eee; padding: 0 12px; box-sizing: border-box; font-size: 16px; outline: none; background: #fafafa; }
+        input:focus { border-color: var(--secondary); background: #fff; }
 
-        .suggestions { position: absolute; top: 65px; left: 0; right: 0; background: #fff; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 100; max-height: 180px; overflow-y: auto; display: none; border: 1px solid #eee; }
-        .sug-item { padding: 12px; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+        .suggestions { position: absolute; top: 70px; left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); z-index: 100; max-height: 200px; overflow-y: auto; display: none; border: 1px solid #eee; }
+        .sug-item { padding: 14px; border-bottom: 1px solid #f9f9f9; font-size: 15px; }
 
-        .btn-row { display: flex; gap: 10px; margin-top: 5px; }
-        .btn { flex: 1; height: 46px; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+        .btn { flex: 1; height: 48px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
+        .btn:active { transform: scale(0.97); opacity: 0.8; }
         .btn-save { background: var(--primary); color: #fff; }
         .btn-paste { background: var(--secondary); color: #fff; }
 
-        /* QUẢN LÝ FILE */
-        .data-manager { background: #e0eee0; border-radius: 18px; padding: 12px; margin-bottom: 15px; border: 1px dashed var(--primary); }
+        .data-manager { background: rgba(255, 255, 255, 0.5); border-radius: 20px; padding: 15px; margin-bottom: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(46, 125, 50, 0.1); }
         .manager-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        .tool-btn { flex: 1; height: 38px; background: #fff; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; font-size: 13px; font-weight: 700; }
+        .tool-btn { flex: 1; height: 40px; background: #fff; border: 1.5px solid var(--primary); color: var(--primary); border-radius: 10px; font-size: 13px; font-weight: 700; }
         .btn-export { background: var(--primary); color: #fff; }
-        select { width: 100%; height: 38px; border-radius: 8px; border: 1px solid var(--primary); padding: 0 8px; font-size: 13px; color: var(--primary); background: #fff; }
-        .search-bar { width: 100%; height: 42px; border-radius: 20px; border: 1.5px solid var(--secondary); padding: 0 15px 0 35px; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="%232e7d32" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 12px center; box-sizing: border-box; }
+        select { width: 100%; height: 40px; border-radius: 10px; border: 1.5px solid var(--primary); padding: 0 8px; font-size: 13px; color: var(--primary); background: #fff; outline: none; }
+        .search-bar { width: 100%; height: 44px; border-radius: 22px; border: 1.5px solid var(--secondary); padding: 0 15px 0 40px; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%232e7d32" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 15px center; box-sizing: border-box; font-size: 15px; }
 
-        /* Danh sách */
-        .item { background: #fff; border-radius: 14px; padding: 12px; margin-bottom: 10px; position: relative; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .p-name { font-weight: 700; color: #1b5e20; font-size: 16px; margin-bottom: 4px; padding-right: 70px; }
-        .p-sku { font-size: 11px; background: #eee; padding: 2px 6px; border-radius: 4px; color: #555; }
+        /* DANH SÁCH - HIỆU ỨNG TRONG SUỐT CHO NÚT */
+        .item { background: #fff; border-radius: 18px; padding: 16px; margin-bottom: 12px; position: relative; border-left: 6px solid #ccc; box-shadow: 0 2px 10px rgba(0,0,0,0.02); overflow: hidden; }
+        .p-name { font-weight: 700; color: #1b5e20; font-size: 17px; margin-bottom: 5px; padding-right: 80px; line-height: 1.3; }
+        .p-sku { font-size: 11px; background: #f0f0f0; padding: 3px 8px; border-radius: 6px; color: #666; font-family: monospace; }
         
-        .action-btns { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
-        .icon-btn { width: 32px; height: 32px; border-radius: 8px; border: none; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .copy-btn { background: #e8f5e9; color: var(--primary); }
-        .del-btn { background: #fee; color: #d32f2f; }
+        .action-btns { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; }
         
-        .c-red { border-left-color: #d32f2f; background: #fff5f5; }
-        .c-orange { border-left-color: #f57c00; background: #fffaf5; }
-        .t-status { font-size: 13px; font-weight: 700; margin-top: 5px; }
+        /* Nút Copy & Xóa dạng Glassmorphism */
+        .icon-btn { 
+            width: 36px; height: 36px; border-radius: 12px; border: none; font-size: 18px; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            backdrop-filter: blur(5px); transition: 0.2s;
+        }
+        .copy-btn { background: rgba(46, 125, 50, 0.1); color: var(--primary); }
+        .del-btn { background: rgba(211, 47, 47, 0.08); color: #d32f2f; }
+        .icon-btn:active { transform: scale(0.9); opacity: 0.6; }
+        
+        .c-red { border-left-color: #d32f2f; background: #fff9f9; }
+        .c-orange { border-left-color: #f57c00; background: #fffcf7; }
+        .t-status { font-size: 14px; font-weight: 700; margin-top: 8px; }
         .t-red { color: #d32f2f; }
         .t-orange { color: #f57c00; }
     </style>
@@ -59,7 +66,7 @@
     <div class="input-box">
         <div class="input-group">
             <label>Mã SKU / Barcode</label>
-            <input id="sku" type="text" placeholder="Quét hoặc nhập mã..." oninput="handleSkuInput()">
+            <input id="sku" type="text" placeholder="Nhập hoặc quét mã..." oninput="handleSkuInput()">
             <div id="suggestions" class="suggestions"></div>
         </div>
         <div class="input-group">
@@ -84,8 +91,8 @@
         </div>
         <div class="manager-row">
             <select id="sort" onchange="render()">
-                <option value="date">Sắp xếp: Hạn gần trước</option>
-                <option value="name">Sắp xếp: Tên A-Z</option>
+                <option value="date">Hạn gần trước</option>
+                <option value="name">Tên A-Z</option>
             </select>
         </div>
         <input id="search" class="search-bar" type="text" placeholder="Tìm tên hoặc SKU..." oninput="render()">
@@ -120,9 +127,9 @@
 
     function save() {
         const s = skuI.value.trim(), n = nameI.value.trim(), h = hsdI.value;
-        if(!s || !h) return alert("Thiếu Mã hoặc HSD!");
-        if(data.some(i => i.sku === s && i.hsd === h)) return alert("Mã này & Ngày này đã tồn tại!");
-        skuMap[s] = n || "SP mới";
+        if(!s || !h) return alert("Vui lòng nhập đủ thông tin!");
+        if(data.some(i => i.sku === s && i.hsd === h)) return alert("Sản phẩm này đã tồn tại!");
+        skuMap[s] = n || "Sản phẩm chưa tên";
         data.push({ sku: s, name: skuMap[s], hsd: h });
         localStorage.setItem('dates', JSON.stringify(data));
         localStorage.setItem('skuMap', JSON.stringify(skuMap));
@@ -130,13 +137,13 @@
     }
 
     function exportCSV() {
-        if(!data.length) return alert("Trống!");
+        if(!data.length) return alert("Danh sách trống!");
         let csv = "\uFEFFsku,name,hsd\n";
         data.forEach(i => csv += `"${i.sku}","${i.name}","${i.hsd}"\n`);
         const b = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(b);
-        a.download = `date_${new Date().toLocaleDateString('vi-VN')}.csv`;
+        a.download = `saoluu_${new Date().toLocaleDateString('vi-VN')}.csv`;
         a.click();
     }
 
@@ -152,13 +159,19 @@
             });
             localStorage.setItem('skuMap', JSON.stringify(skuMap));
             localStorage.setItem('dates', JSON.stringify(data));
-            render(); alert("Xong!");
+            render(); alert("Đã nạp dữ liệu xong!");
         };
-        r.readAsText(input.files[0]);
+        reader.readAsText(input.files[0]);
     }
 
     function copySku(txt) {
-        navigator.clipboard.writeText(txt).then(() => alert("Đã copy mã: " + txt));
+        navigator.clipboard.writeText(txt).then(() => {
+            const toast = document.createElement('div');
+            toast.innerText = "Đã copy: " + txt;
+            toast.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; padding:8px 16px; border-radius:20px; font-size:13px; z-index:1000;";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1500);
+        });
     }
 
     async function smartPaste() {
@@ -166,7 +179,7 @@
         if(t) { skuI.value = t.trim(); if(skuMap[t.trim()]) nameI.value = skuMap[t.trim()]; hsdI.focus(); }
     }
 
-    function del(idx) { if(confirm("Xóa?")) { data.splice(idx,1); localStorage.setItem('dates',JSON.stringify(data)); render(); } }
+    function del(idx) { if(confirm("Bạn muốn xóa mục này?")) { data.splice(idx,1); localStorage.setItem('dates',JSON.stringify(data)); render(); } }
 
     function render() {
         const list = document.getElementById('list'), key = document.getElementById('search').value.toLowerCase();
@@ -185,8 +198,8 @@
 
             list.innerHTML += `<div class="item ${cls}">
                 <div class="p-name">${i.name}</div>
-                <div style="margin-bottom:6px"><span class="p-sku">${i.sku}</span></div>
-                <div style="font-size:13px">HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
+                <div style="margin-bottom:8px"><span class="p-sku">${i.sku}</span></div>
+                <div style="font-size:13px; color:#555;">HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
                 <div class="t-status ${tcls}">${txt}</div>
                 <div class="action-btns">
                     <button class="icon-btn copy-btn" onclick="copySku('${i.sku}')">📋</button>
