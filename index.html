@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>KIỂM DATE PRO - BLUE</title>
+    <meta name="apple-mobile-web-app-title" content="KIỂM DATE">
+    <link rel="apple-touch-icon" href="icon.png.PNG">
+    <link rel="icon" type="image/png" href="icon.png.PNG">
+    
+    <title>KIỂM DATE</title>
     <style>
         :root { 
             --primary: #1976d2; 
@@ -30,20 +35,23 @@
             height: 50px; 
             border-radius: 15px; 
             border: 1.5px solid #e1e8ed; 
-            padding: 0; /* Xóa padding để không bị đẩy dài ra */
+            padding: 0; 
             box-sizing: border-box; 
             font-size: 16px; 
             outline: none; 
             background: #f9fbff; 
-            text-align: center; /* Căn giữa chữ */
+            text-align: center; 
             display: block;
-            line-height: 50px; /* Căn giữa dọc */
+            line-height: 50px;
         }
         
-        /* Fix riêng cho ô date trên iOS */
+        /* Fix triệt để cho ô date trên mọi trình duyệt */
         input[type="date"] {
             -webkit-appearance: none;
             min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         input:focus { border-color: var(--secondary); background: #fff; }
@@ -88,7 +96,7 @@
 <body>
 
 <div class="app">
-    <h1>📅 KIỂM DATE PRO</h1>
+    <h1>📅 KIỂM DATE</h1>
 
     <div class="input-box">
         <div class="input-group">
@@ -122,7 +130,6 @@
 </div>
 
 <script>
-    // Toàn bộ logic giữ nguyên...
     let data = JSON.parse(localStorage.getItem('dates')||'[]');
     let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
     const skuI = document.getElementById('sku'), nameI = document.getElementById('name'), hsdI = document.getElementById('hsd');
@@ -179,8 +186,10 @@
     }
 
     async function smartPaste() {
-        const t = await navigator.clipboard.readText();
-        if(t) { skuI.value = t.trim(); if(skuMap[t.trim()]) nameI.value = skuMap[t.trim()]; hsdI.focus(); }
+        try {
+            const t = await navigator.clipboard.readText();
+            if(t) { skuI.value = t.trim(); if(skuMap[t.trim()]) nameI.value = skuMap[t.trim()]; hsdI.focus(); }
+        } catch (err) { alert("Không thể dán từ clipboard."); }
     }
 
     function exportCSV() {
@@ -201,7 +210,7 @@
                 }
             });
             localStorage.setItem('dates', JSON.stringify(data));
-            render(); alert("Xong!");
+            render(); alert("Đã nạp xong!");
         };
         r.readAsText(input.files[0]);
     }
