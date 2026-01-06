@@ -26,46 +26,35 @@
             width: 100%; height: 50px; border-radius: 15px; border: 1.5px solid #e1e8ed; 
             padding: 0; box-sizing: border-box; font-size: 16px; outline: none; 
             background: #f9fbff; text-align: center; display: block; line-height: 50px;
-            transition: 0.2s;
         }
-
-        /* MỚI: Ẩn placeholder ngay khi ấn vào ô */
-        input:focus::placeholder {
-            color: transparent;
-        }
-
+        input:focus::placeholder { color: transparent; }
         input[type="date"] { -webkit-appearance: none; min-height: 50px; }
-        input:focus { border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.05); }
+        input:focus { border-color: var(--secondary); background: #fff; }
 
-        /* GỢI Ý */
         .suggestions { 
             position: absolute; top: 75px; left: 0; right: 0; background: #fff; 
             border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
             z-index: 100; max-height: 200px; overflow-y: auto; display: none; border: 1px solid #eee;
         }
         .sug-item { padding: 14px; border-bottom: 1px solid #f9f9f9; font-size: 15px; color: #333; text-align: left; }
-        .sug-item:active { background: #f0f7ff; }
 
         .btn-row { display: flex; gap: 10px; margin-top: 5px; }
-        .btn { flex: 1; height: 50px; border: none; border-radius: 15px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; color: #fff; }
+        .btn { flex: 1; height: 50px; border: none; border-radius: 15px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; }
         .btn-paste { background: var(--secondary); }
         .btn-save { background: var(--primary); }
-        .btn:active { transform: scale(0.97); }
 
         .data-manager { background: rgba(255, 255, 255, 0.5); border-radius: 20px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(25, 118, 210, 0.1); }
         .manager-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .tool-btn { flex: 1; height: 42px; background: #fff; border: 1.5px solid var(--primary); color: var(--primary); border-radius: 12px; font-size: 13px; font-weight: 700; }
         .search-bar { width: 100%; height: 46px; border-radius: 23px; border: 1.5px solid #d1d9e0; padding: 0 15px; background: #fff; box-sizing: border-box; font-size: 15px; text-align: center; outline: none; }
 
-        /* DANH SÁCH SẢN PHẨM */
-        .item { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 12px; position: relative; border-left: 6px solid #d1d9e0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .p-name { font-weight: 700; color: #0d47a1; font-size: 16px; margin-bottom: 5px; padding-right: 60px; line-height: 1.4; text-transform: uppercase; }
+        .item { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 12px; position: relative; border-left: 6px solid #d1d9e0; }
+        .p-name { font-weight: 700; color: #0d47a1; font-size: 16px; margin-bottom: 5px; text-transform: uppercase; padding-right: 50px;}
         .p-sku { font-size: 11px; background: #e3f2fd; padding: 3px 8px; border-radius: 6px; color: #1565c0; font-family: monospace; display: inline-block; margin-bottom: 5px; }
         
         .action-btns { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
-        .copy-box { width: 42px; height: 42px; border-radius: 12px; background: #e3f2fd; border: 1px solid #bbdefb; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .copy-icon { width: 22px; height: 22px; color: var(--primary); }
-        .del-text { color: #d32f2f; font-size: 22px; font-weight: bold; cursor: pointer; opacity: 0.4; line-height: 1; }
+        .copy-box { width: 42px; height: 42px; border-radius: 12px; background: #e3f2fd; border: 1px solid #bbdefb; display: flex; align-items: center; justify-content: center; }
+        .del-text { color: #d32f2f; font-size: 22px; font-weight: bold; cursor: pointer; opacity: 0.4; }
 
         .c-red { border-left-color: #d32f2f; background: #fffbfb; }
         .c-orange { border-left-color: #ff9800; background: #fffaf2; }
@@ -127,12 +116,7 @@
                     const div = document.createElement('div');
                     div.className = 'sug-item';
                     div.innerHTML = `<b>${m}</b><br><small>${skuMap[m]}</small>`;
-                    div.onclick = () => { 
-                        skuI.value = m; 
-                        nameI.value = skuMap[m]; 
-                        sugD.style.display = 'none'; 
-                        hsdI.focus(); 
-                    };
+                    div.onclick = () => { skuI.value = m; nameI.value = skuMap[m]; sugD.style.display = 'none'; hsdI.focus(); };
                     sugD.appendChild(div);
                 });
             } else { sugD.style.display = 'none'; }
@@ -140,35 +124,44 @@
         if(skuMap[val]) nameI.value = skuMap[val];
     }
 
-    document.addEventListener('click', (e) => { if (e.target !== skuI) sugD.style.display = 'none'; });
-
     function save() {
         const s = skuI.value.trim(), n = nameI.value.trim(), h = hsdI.value;
         if(!s || !h) return alert("Vui lòng điền đủ SKU và Ngày!");
-        skuMap[s] = n || "Sản phẩm mới";
+
+        // 1. Kiểm tra trùng lặp (Cùng SKU và cùng Ngày HSD)
+        const isDuplicate = data.some(item => item.sku === s && item.hsd === h);
+        if (isDuplicate) {
+            if (!confirm("Sản phẩm này với ngày HSD này đã tồn tại trong danh sách. Bạn vẫn muốn lưu tiếp chứ?")) {
+                return;
+            }
+        }
+
+        // 2. Kiểm tra nếu đổi tên cho SKU cũ
+        if (skuMap[s] && skuMap[s] !== n && n !== "") {
+            if (confirm(`SKU này đang có tên là "${skuMap[s]}". Bạn có muốn đổi tên thành "${n}" cho tất cả không?`)) {
+                skuMap[s] = n;
+                // Cập nhật lại tên cho các mục cũ có cùng SKU
+                data.forEach(item => { if(item.sku === s) item.name = n; });
+            } else {
+                nameI.value = skuMap[s]; // Trả lại tên cũ nếu không đồng ý đổi
+            }
+        }
+
+        skuMap[s] = nameI.value || "Sản phẩm mới";
         data.push({ sku: s, name: skuMap[s], hsd: h });
+        
         localStorage.setItem('dates', JSON.stringify(data));
         localStorage.setItem('skuMap', JSON.stringify(skuMap));
-        skuI.value = ''; nameI.value = ''; hsdI.value = ''; render();
+        
+        skuI.value = ''; nameI.value = ''; hsdI.value = ''; 
+        render();
     }
-
-    function copySku(txt) {
-        navigator.clipboard.writeText(txt).then(() => {
-            const toast = document.createElement('div');
-            toast.innerText = "📋 Đã copy: " + txt;
-            toast.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(25,118,210,0.9); color:#fff; padding:10px 20px; border-radius:25px; font-size:14px; z-index:1000;";
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 1200);
-        });
-    }
-
-    function del(idx) { if(confirm("Xóa dòng này?")) { data.splice(idx,1); localStorage.setItem('dates',JSON.stringify(data)); render(); } }
 
     function render() {
         const list = document.getElementById('list'), key = document.getElementById('search').value.toLowerCase();
         list.innerHTML = '';
         let filtered = data.filter(i => i.name.toLowerCase().includes(key) || i.sku.includes(key));
-        filtered.sort((a,b) => new Date(a.hsd)-new Date(b.hsd));
+        filtered.sort((a,b) => new Date(a.hsd) - new Date(b.hsd));
 
         filtered.forEach((i) => {
             const d = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
@@ -184,37 +177,25 @@
                 <div style="font-size:13px; color:#555;">HSD: <b>${i.hsd.split('-').reverse().join('/')}</b></div>
                 <div class="t-status ${tcls}">${txt}</div>
                 <div class="action-btns">
-                    <div class="copy-box" onclick="copySku('${i.sku}')">
-                        <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    </div>
+                    <div class="copy-box" onclick="navigator.clipboard.writeText('${i.sku}')">📋</div>
                     <div class="del-text" onclick="del(${data.indexOf(i)})">×</div>
                 </div>
             </div>`;
         });
     }
 
-    async function smartPaste() {
-        try {
-            const t = await navigator.clipboard.readText();
-            if(t) { skuI.value = t.trim(); handleSkuInput(); hsdI.focus(); }
-        } catch (err) { alert("Vui lòng cấp quyền dán."); }
-    }
-
-    function exportCSV() {
-        let csv = "\uFEFFsku,name,hsd\n";
-        data.forEach(i => csv += `"${i.sku}","${i.name}","${i.hsd}"\n`);
-        const b = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `date_check.csv`; a.click();
-    }
+    function del(idx) { if(confirm("Xóa dòng này?")) { data.splice(idx,1); localStorage.setItem('dates',JSON.stringify(data)); render(); } }
 
     function importCSV(input) {
         const r = new FileReader();
         r.onload = (e) => {
-            e.target.result.split('\n').forEach(l => {
+            const lines = e.target.result.split(/\r?\n/);
+            lines.forEach(l => {
                 const p = l.replace(/"/g,'').split(/[,;]/);
-                if(p.length >= 2 && p[0].toLowerCase()!=='sku') {
-                    skuMap[p[0].trim()] = p[1].trim();
-                    if(p[2]) data.push({sku:p[0].trim(), name:p[1].trim(), hsd:p[2].trim()});
+                if(p.length >= 2 && p[0].toLowerCase() !== 'sku' && p[0].trim() !== '') {
+                    const s = p[0].trim(), n = p[1].trim(), h = p[2] ? p[2].trim() : "";
+                    skuMap[s] = n;
+                    if(h) data.push({sku:s, name:n, hsd:h});
                 }
             });
             localStorage.setItem('dates', JSON.stringify(data));
@@ -222,6 +203,18 @@
             render(); alert("Đã nhập xong!");
         };
         r.readAsText(input.files[0]);
+    }
+
+    function exportCSV() {
+        let csv = "\uFEFFsku,name,hsd\n";
+        data.forEach(i => csv += `"${i.sku}","${i.name}","${i.hsd}"\n`);
+        const b = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `kiem_date.csv`; a.click();
+    }
+
+    async function smartPaste() {
+        const t = await navigator.clipboard.readText();
+        if(t) { skuI.value = t.trim(); handleSkuInput(); hsdI.focus(); }
     }
 
     render();
