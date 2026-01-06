@@ -1,113 +1,939 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KIỂM DATE</title>
-<style>
-body{font-family:system-ui;background:#f0f4f8;padding:12px}
-.app{max-width:480px;margin:auto}
-h1{text-align:center;color:#1976d2}
-.box{background:#fff;padding:16px;border-radius:16px;margin-bottom:12px}
-input,button{width:100%;height:44px;margin-top:8px;border-radius:12px;border:1px solid #ccc;font-size:15px}
-button{background:#1976d2;color:#fff;font-weight:bold;border:none}
-.item{background:#fff;padding:14px;border-radius:14px;margin-bottom:10px;border-left:6px solid #ccc}
-.red{border-left-color:#d32f2f;background:#fff5f5}
-.orange{border-left-color:#ff9800;background:#fffaf2}
-small{color:#555}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KIỂM DATE" />
+  <link rel="apple-touch-icon" href="icon.png.PNG" />
+  <link rel="icon" type="image/png" href="icon.png.PNG" />
+
+  <title>KIỂM DATE</title>
+
+  <style>
+    :root { --primary:#1976d2; --secondary:#64b5f6; --bg:#f0f4f8; --card:#ffffff; --danger:#d32f2f; --warn:#ef6c00; --ok:#1b5e20; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:-apple-system, system-ui, sans-serif; background:var(--bg); padding:12px; color:#333; -webkit-font-smoothing:antialiased; }
+    .app{ max-width:520px; margin:0 auto; }
+    h1{ text-align:center; color:var(--primary); font-size:22px; margin:10px 0 6px; font-weight:900; }
+    .sub{ text-align:center; color:#6b7280; font-size:12px; font-weight:700; margin-bottom:10px; }
+
+    .input-box{ background:var(--card); border-radius:24px; padding:18px; box-shadow:0 4px 20px rgba(0,0,0,0.05); margin-bottom:12px; }
+    .input-group{ margin-bottom:14px; width:100%; position:relative; }
+    label{ color:var(--primary); font-weight:800; font-size:13px; display:block; margin:0 0 6px 8px; }
+    input[type="text"], input[type="date"]{
+      width:100%; height:50px; border-radius:15px; border:1.5px solid #e1e8ed;
+      padding:0 14px; font-size:16px; outline:none; background:#f9fbff; text-align:center;
+    }
+    input[type="date"]{ -webkit-appearance:none; min-height:50px; }
+    input:focus{ border-color:var(--secondary); background:#fff; }
+    input:focus::placeholder{ color:transparent; }
+
+    .suggestions{
+      position:absolute; top:76px; left:0; right:0; background:#fff;
+      border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,0.15);
+      z-index:100; max-height:220px; overflow:auto; display:none; border:1px solid #eee;
+    }
+    .sug-item{ padding:12px 14px; border-bottom:1px solid #f3f4f6; font-size:14px; color:#333; text-align:left; cursor:pointer; }
+    .sug-item b{ display:block; font-size:14px; }
+    .sug-item small{ color:#6b7280; font-weight:700; }
+
+    .btn-row{ display:flex; gap:10px; margin-top:2px; }
+    .btn{
+      flex:1; height:50px; border:none; border-radius:15px; font-weight:900; font-size:15px;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; color:#fff;
+      user-select:none; -webkit-tap-highlight-color:transparent;
+    }
+    .btn:active{ transform:scale(0.99); }
+    .btn-paste{ background:var(--secondary); }
+    .btn-save{ background:var(--primary); }
+    .btn-cancel{ background:#94a3b8; }
+    .btn-danger{ background:var(--danger); }
+
+    .summary{ display:flex; gap:8px; margin:10px 0 12px; }
+    .chip{ flex:1; background:#fff; border:1px solid #eef2f7; border-radius:14px; padding:10px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.03); }
+    .chip .n{ font-weight:1000; font-size:18px; line-height:1.2; }
+    .chip .t{ font-size:11px; color:#6b7280; font-weight:800; margin-top:2px; }
+
+    .data-manager{ background:rgba(255,255,255,0.55); border-radius:20px; padding:12px; margin-bottom:12px; border:1px solid rgba(25,118,210,0.1); }
+    .manager-row{ display:flex; gap:8px; margin-bottom:10px; }
+    .tool-btn{ flex:1; height:42px; background:#fff; border:1.5px solid var(--primary); color:var(--primary); border-radius:12px; font-size:13px; font-weight:900; cursor:pointer; }
+    .tool-btn.primary{ background:var(--primary); color:#fff; }
+    .tool-btn.danger{ border-color:var(--danger); color:var(--danger); }
+    .tool-btn.gray{ border-color:#94a3b8; color:#334155; }
+
+    .search-bar{ width:100%; height:46px; border-radius:23px; border:1.5px solid #d1d9e0; padding:0 15px; background:#fff; font-size:15px; text-align:center; outline:none; }
+
+    .item{ background:#fff; border-radius:20px; padding:16px; margin-bottom:12px; position:relative; border-left:6px solid #d1d9e0; box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+    .c-red{ border-left-color:var(--danger); background:#fffbfb; }
+    .c-orange{ border-left-color:#ff9800; background:#fffaf2; }
+
+    .p-name{ font-weight:1000; color:#0d47a1; font-size:16px; margin-bottom:6px; text-transform:uppercase; padding-right:132px; word-break:break-word; }
+    .p-sku{ font-size:11px; background:#e3f2fd; padding:3px 8px; border-radius:6px; color:#1565c0; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; display:inline-block; margin-bottom:6px; }
+    .meta{ font-size:13px; color:#555; margin-top:2px; }
+    .t-status{ font-size:14px; font-weight:1000; margin-top:8px; }
+    .t-red{ color:var(--danger); }
+    .t-orange{ color:var(--warn); }
+    .t-ok{ color:var(--ok); }
+
+    .action-btns{ position:absolute; top:12px; right:12px; display:flex; flex-direction:column; gap:10px; align-items:center; }
+    .icon-btn{ width:42px; height:42px; border-radius:12px; background:#eef6ff; border:1px solid #cfe6ff; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; font-size:18px; }
+    .icon-btn.danger{ background:#fff0f0; border-color:#ffd0d0; }
+
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background:rgba(17,24,39,0.92); color:#fff; padding:10px 14px;
+      border-radius:14px; font-weight:900; font-size:13px; display:none; z-index:999;
+      max-width:92%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; z-index:1000; padding:14px; }
+    .modal{ width:100%; max-width:520px; background:#fff; border-radius:18px; padding:14px; box-shadow:0 20px 50px rgba(0,0,0,0.25); }
+    .modal h2{ margin:6px 4px 8px; font-size:16px; color:#0f172a; font-weight:1000; }
+    .modal p{ margin:0 4px 12px; color:#6b7280; font-size:13px; font-weight:800; }
+    .modal .btn-row{ margin-top:10px; }
+
+    .debugbox{
+      display:none;
+      background:#0b1220;
+      color:#dbeafe;
+      border-radius:16px;
+      padding:12px;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      margin:10px 0 0;
+      border:1px solid rgba(148,163,184,0.25);
+    }
+  </style>
 </head>
+
 <body>
+  <div class="app">
+    <h1>📅 KIỂM DATE</h1>
+    <div class="sub">Offline • localStorage • Import/Export CSV • Sửa/Xoá • DEBUG</div>
 
-<div class="app">
-<h1>📅 KIỂM DATE</h1>
+    <div class="input-box">
+      <div class="input-group">
+        <label>Mã SKU / Barcode</label>
+        <input id="sku" type="text" placeholder="Nhập hoặc quét mã..." autocomplete="off" />
+        <div id="suggestions" class="suggestions"></div>
+      </div>
 
-<div class="box">
-<input id="sku" placeholder="SKU / Barcode">
-<input id="name" placeholder="Tên sản phẩm">
-<input id="hsd" type="date">
-<button onclick="save()">💾 Lưu</button>
-</div>
+      <div class="input-group">
+        <label>Tên sản phẩm</label>
+        <input id="name" type="text" placeholder="Tên sản phẩm..." autocomplete="off" />
+      </div>
 
-<div class="box">
-<button onclick="exportCSV()">📤 Xuất CSV</button>
-<input type="file" id="csv" onchange="importCSV(this)" accept=".csv">
-</div>
+      <div class="input-group">
+        <label>Hạn sử dụng (HSD)</label>
+        <input id="hsd" type="date" />
+      </div>
 
-<div id="list"></div>
-</div>
+      <div class="btn-row">
+        <button id="btnPaste" class="btn btn-paste" type="button">📋 Dán mã</button>
+        <button id="btnSave" class="btn btn-save" type="button">💾 Lưu lại</button>
+      </div>
+
+      <div id="editRow" class="btn-row" style="display:none; margin-top:10px;">
+        <button id="btnCancelEdit" class="btn btn-cancel" type="button">↩️ Huỷ sửa</button>
+        <button id="btnDeleteEdit" class="btn btn-danger" type="button">🗑️ Xoá dòng</button>
+      </div>
+
+      <div id="debugBox" class="debugbox"></div>
+    </div>
+
+    <div class="summary">
+      <div class="chip"><div id="sumTotal" class="n">0</div><div class="t">Tổng</div></div>
+      <div class="chip"><div id="sumExpired" class="n">0</div><div class="t">Hết hạn</div></div>
+      <div class="chip"><div id="sum7" class="n">0</div><div class="t">≤ 7 ngày</div></div>
+      <div class="chip"><div id="sum30" class="n">0</div><div class="t">≤ 30 ngày</div></div>
+    </div>
+
+    <div class="data-manager">
+      <div class="manager-row">
+        <input type="file" id="csvIn" hidden accept=".csv,text/csv" />
+        <button id="btnImport" class="tool-btn" type="button">📥 NHẬP CSV</button>
+        <button id="btnExport" class="tool-btn primary" type="button">📤 XUẤT CSV</button>
+        <button id="btnClearAll" class="tool-btn danger" type="button">🧹 XOÁ ALL</button>
+        <button id="btnDebug" class="tool-btn gray" type="button">📌 DEBUG</button>
+      </div>
+      <input id="search" class="search-bar" type="text" placeholder="Tìm tên / SKU / HSD..." />
+    </div>
+
+    <div id="list"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 id="modalTitle">Xác nhận</h2>
+      <p id="modalText">Bạn chắc chứ?</p>
+      <div class="btn-row">
+        <button id="modalCancel" class="btn btn-cancel" type="button">Huỷ</button>
+        <button id="modalOk" class="btn btn-danger" type="button">Đồng ý</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem('dates_v2')||'[]');
+(() => {
+  // ========= DOM =========
+  const skuI = document.getElementById('sku');
+  const nameI = document.getElementById('name');
+  const hsdI = document.getElementById('hsd');
+  const sugD = document.getElementById('suggestions');
+  const listEl = document.getElementById('list');
+  const searchI = document.getElementById('search');
+  const debugBox = document.getElementById('debugBox');
 
-function save(){
-  const sku=sku.value.trim();
-  const name=nameI.value.trim()||'Sản phẩm';
-  const hsd=hsdI.value;
-  if(!sku||!hsd){alert('Thiếu SKU hoặc HSD');return}
-  data.push({sku,name,hsd});
-  localStorage.setItem('dates_v2',JSON.stringify(data));
-  sku.value=nameI.value=hsdI.value='';
-  render();
-}
+  const btnPaste = document.getElementById('btnPaste');
+  const btnSave = document.getElementById('btnSave');
+  const editRow = document.getElementById('editRow');
+  const btnCancelEdit = document.getElementById('btnCancelEdit');
+  const btnDeleteEdit = document.getElementById('btnDeleteEdit');
 
-const skuI=document.getElementById('sku');
-const nameI=document.getElementById('name');
-const hsdI=document.getElementById('hsd');
+  const btnImport = document.getElementById('btnImport');
+  const btnExport = document.getElementById('btnExport');
+  const btnClearAll = document.getElementById('btnClearAll');
+  const btnDebug = document.getElementById('btnDebug');
+  const csvIn = document.getElementById('csvIn');
 
-function daysLeft(h){
-  return Math.ceil((new Date(h+'T23:59:59')-Date.now())/86400000);
-}
+  const sumTotal = document.getElementById('sumTotal');
+  const sumExpired = document.getElementById('sumExpired');
+  const sum7 = document.getElementById('sum7');
+  const sum30 = document.getElementById('sum30');
 
-function render(){
-  list.innerHTML='';
-  data.forEach((i,idx)=>{
-    const d=daysLeft(i.hsd);
-    let cls='',txt=`Còn ${d} ngày`;
-    if(d<0){cls='red';txt='❌ Hết hạn'}
-    else if(d<=30){cls='orange';txt=`⏰ ${d} ngày`}
-    list.innerHTML+=`
-      <div class="item ${cls}">
-        <b>${i.name}</b><br>
-        <small>${i.sku}</small><br>
-        HSD: ${i.hsd}<br>
-        <b>${txt}</b><br>
-        <button onclick="del(${idx})" style="background:#d32f2f;margin-top:6px">Xoá</button>
-      </div>`;
-  });
-}
+  const toastEl = document.getElementById('toast');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalText = document.getElementById('modalText');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalOk = document.getElementById('modalOk');
 
-function del(i){
-  if(confirm('Xoá dòng này?')){
-    data.splice(i,1);
-    localStorage.setItem('dates_v2',JSON.stringify(data));
-    render();
+  // ========= Storage keys =========
+  const KEY_V2 = 'kiemdate_v2';
+  const KEY_V2_MAP = 'kiemdate_v2_skuMap';
+
+  // ========= State =========
+  let data = [];     // {id, sku, name, hsd, createdAt}
+  let skuMap = {};   // {sku: name}
+  let editingId = null;
+
+  // ========= Debug log =========
+  const LOG = [];
+  function log(...args){
+    const msg = args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
+    LOG.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+    if(LOG.length > 250) LOG.shift();
+    if(debugBox.style.display === 'block') debugBox.textContent = LOG.join('\n');
+    console.log('[KIEMDATE]', ...args);
   }
-}
 
-function exportCSV(){
-  let csv='sku,name,hsd\n';
-  data.forEach(i=>csv+=`${i.sku},${i.name},${i.hsd}\n`);
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='kiem_date.csv';
-  a.click();
-}
+  window.addEventListener('error', (e) => {
+    log('JS ERROR:', e.message, 'at', (e.filename||'') + ':' + (e.lineno||''));
+    showToast('❌ Có lỗi JS (bấm DEBUG để xem)');
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    log('PROMISE REJECTION:', e.reason);
+    showToast('❌ Có lỗi (bấm DEBUG để xem)');
+  });
 
-function importCSV(input){
-  const r=new FileReader();
-  r.onload=e=>{
-    e.target.result.split(/\r?\n/).forEach(l=>{
-      const p=l.split(',');
-      if(p[0]&&p[0]!=='sku') data.push({sku:p[0],name:p[1]||'SP',hsd:p[2]});
+  // ========= Utils =========
+  const now = () => Date.now();
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+  }
+  const trim = (s) => (s ?? '').toString().trim();
+
+  function showToast(msg, ms=1500){
+    toastEl.textContent = msg;
+    toastEl.style.display = 'block';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.style.display='none', ms);
+  }
+
+  function openConfirm({title='Xác nhận', text='Bạn chắc chứ?', okText='Đồng ý', cancelText='Huỷ'}){
+    return new Promise(resolve => {
+      modalTitle.textContent = title;
+      modalText.textContent = text;
+      modalOk.textContent = okText;
+      modalCancel.textContent = cancelText;
+      modalBackdrop.style.display = 'flex';
+
+      const cleanup = () => {
+        modalBackdrop.style.display = 'none';
+        modalCancel.removeEventListener('click', onCancel);
+        modalOk.removeEventListener('click', onOk);
+        modalBackdrop.removeEventListener('click', onBackdrop);
+      };
+      const onCancel = () => { cleanup(); resolve(false); };
+      const onOk = () => { cleanup(); resolve(true); };
+      const onBackdrop = (e) => { if(e.target === modalBackdrop){ cleanup(); resolve(false); } };
+
+      modalCancel.addEventListener('click', onCancel);
+      modalOk.addEventListener('click', onOk);
+      modalBackdrop.addEventListener('click', onBackdrop);
     });
-    localStorage.setItem('dates_v2',JSON.stringify(data));
-    render();
-  };
-  r.readAsText(input.files[0]);
-}
+  }
 
-render();
+  function storageAvailable(){
+    try{
+      const k='__test__'+Math.random();
+      localStorage.setItem(k,'1');
+      localStorage.removeItem(k);
+      return true;
+    }catch{ return false; }
+  }
+
+  function normalizeDateToISO(v){
+    v = trim(v);
+    if(!v) return '';
+    if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+
+    let m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/); // dd/mm/yyyy
+    if(m){
+      const dd=String(m[1]).padStart(2,'0');
+      const mm=String(m[2]).padStart(2,'0');
+      const yy=m[3];
+      return `${yy}-${mm}-${dd}`;
+    }
+
+    m = v.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/); // yyyy/mm/dd
+    if(m){
+      const yy=m[1];
+      const mm=String(m[2]).padStart(2,'0');
+      const dd=String(m[3]).padStart(2,'0');
+      return `${yy}-${mm}-${dd}`;
+    }
+
+    const d = new Date(v);
+    if(!isNaN(d.getTime())){
+      const yy=d.getFullYear();
+      const mm=String(d.getMonth()+1).padStart(2,'0');
+      const dd=String(d.getDate()).padStart(2,'0');
+      return `${yy}-${mm}-${dd}`;
+    }
+    return '';
+  }
+
+  function validISODate(iso){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+    const d = new Date(iso + 'T12:00:00');
+    if(isNaN(d.getTime())) return false;
+    const [y,m,dd] = iso.split('-').map(Number);
+    return d.getFullYear()===y && (d.getMonth()+1)===m && d.getDate()===dd;
+  }
+
+  function fmtDMY(iso){
+    if(!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function daysLeft(iso){
+    const target = new Date(iso + 'T23:59:59');
+    return Math.ceil((target.getTime() - now()) / 86400000);
+  }
+
+  function statusFor(d){
+    if(d < 0) return { cls:'c-red', text:'❌ ĐÃ HẾT HẠN', tcls:'t-red' };
+    if(d === 0) return { cls:'c-red', text:'🔥 Hết hạn hôm nay', tcls:'t-red' };
+    if(d <= 7) return { cls:'c-red', text:`⚠️ Sắp hết hạn (${d} ngày)`, tcls:'t-red' };
+    if(d <= 30) return { cls:'c-orange', text:`⏰ Cận date (${d} ngày)`, tcls:'t-orange' };
+    return { cls:'', text:`✅ Còn ${d} ngày`, tcls:'t-ok' };
+  }
+
+  function saveStorage(){
+    try{
+      localStorage.setItem(KEY_V2, JSON.stringify(data));
+      localStorage.setItem(KEY_V2_MAP, JSON.stringify(skuMap));
+      log('Saved:', {items:data.length, map:Object.keys(skuMap).length});
+      return true;
+    }catch(e){
+      log('saveStorage FAIL:', e?.message || e);
+      showToast('❌ Không lưu được (localStorage bị chặn)');
+      return false;
+    }
+  }
+
+  function loadStorage(){
+    // ưu tiên V2
+    const v2 = localStorage.getItem(KEY_V2);
+    const v2m = localStorage.getItem(KEY_V2_MAP);
+
+    if(v2){
+      try { data = JSON.parse(v2) || []; } catch { data = []; }
+      try { skuMap = JSON.parse(v2m || '{}') || {}; } catch { skuMap = {}; }
+      if(!Array.isArray(data)) data = [];
+      log('Loaded v2', {items:data.length});
+      return;
+    }
+
+    // migrate từ bản cũ: dates + skuMap
+    const oldDates = localStorage.getItem('dates');
+    const oldMap = localStorage.getItem('skuMap');
+
+    if(oldDates || oldMap){
+      let od=[], om={};
+      try { od = JSON.parse(oldDates || '[]') || []; } catch { od=[]; }
+      try { om = JSON.parse(oldMap || '{}') || {}; } catch { om={}; }
+
+      skuMap = (om && typeof om === 'object') ? om : {};
+      data = [];
+
+      (Array.isArray(od)?od:[]).forEach(item => {
+        const s = trim(item?.sku);
+        const h = normalizeDateToISO(item?.hsd);
+        const n = trim(item?.name) || skuMap[s] || 'Sản phẩm mới';
+        if(s && validISODate(h)){
+          data.push({ id: uid(), sku:s, name:n, hsd:h, createdAt: now() });
+          if(!skuMap[s]) skuMap[s]=n;
+        }
+      });
+
+      saveStorage();
+      showToast('✅ Đã nâng cấp dữ liệu (bản cũ → bản mới)');
+      log('Migrated', {items:data.length});
+      return;
+    }
+
+    data = [];
+    skuMap = {};
+    log('No existing data');
+  }
+
+  // ========= Suggestions =========
+  function hideSuggestions(){ sugD.style.display='none'; sugD.innerHTML=''; }
+
+  function updateSuggestions(){
+    const val = trim(skuI.value);
+    sugD.innerHTML = '';
+
+    if(skuMap[val]) nameI.value = skuMap[val];
+
+    if(val.length < 2){ hideSuggestions(); return; }
+
+    const matches = Object.keys(skuMap)
+      .filter(k => k.toLowerCase().includes(val.toLowerCase()))
+      .slice(0, 8);
+
+    if(matches.length === 0){ hideSuggestions(); return; }
+
+    matches.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'sug-item';
+      const b = document.createElement('b'); b.textContent = m;
+      const sm = document.createElement('small'); sm.textContent = skuMap[m] || '';
+      div.appendChild(b); div.appendChild(sm);
+      div.addEventListener('click', () => {
+        skuI.value = m;
+        nameI.value = skuMap[m] || '';
+        hideSuggestions();
+        hsdI.focus();
+      });
+      sugD.appendChild(div);
+    });
+
+    sugD.style.display = 'block';
+  }
+
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.input-group')) hideSuggestions();
+  });
+
+  // ========= Edit mode =========
+  function enterEdit(id){
+    const item = data.find(x => x.id === id);
+    if(!item) return;
+    editingId = id;
+    skuI.value = item.sku;
+    nameI.value = item.name;
+    hsdI.value = item.hsd;
+    btnSave.textContent = '✅ Cập nhật';
+    editRow.style.display = 'flex';
+    hideSuggestions();
+    showToast('✏️ Đang sửa dòng');
+    log('Enter edit', {id});
+  }
+
+  function exitEdit(){
+    editingId = null;
+    btnSave.textContent = '💾 Lưu lại';
+    editRow.style.display = 'none';
+    skuI.value=''; nameI.value=''; hsdI.value='';
+    hideSuggestions();
+    log('Exit edit');
+  }
+
+  // ========= Upsert =========
+  async function upsert(){
+    log('Upsert click');
+
+    if(!storageAvailable()){
+      showToast('❌ localStorage bị chặn (mở bằng Safari/Chrome thật, không ẩn danh/webview)');
+      log('storageAvailable: FALSE');
+      return;
+    }
+
+    const s = trim(skuI.value);
+    const nIn = trim(nameI.value);
+    const h = normalizeDateToISO(hsdI.value);
+
+    if(!s){ showToast('⚠️ Vui lòng nhập SKU'); skuI.focus(); return; }
+    if(!validISODate(h)){ showToast('⚠️ HSD không hợp lệ'); hsdI.focus(); return; }
+
+    const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
+
+    // nếu đổi tên SKU đã có -> hỏi đổi tất cả
+    if(skuMap[s] && nIn && skuMap[s] !== nIn){
+      const ok = await openConfirm({
+        title:'Đổi tên SKU?',
+        text:`SKU "${s}" đang là "${skuMap[s]}". Đổi thành "${nIn}" cho tất cả dòng cùng SKU?`,
+        okText:'Đổi tất cả',
+        cancelText:'Giữ tên cũ'
+      });
+      if(ok){
+        skuMap[s] = nIn;
+        data.forEach(it => { if(it.sku === s) it.name = nIn; });
+      }else{
+        nameI.value = skuMap[s];
+      }
+    }
+
+    // cập nhật map an toàn
+    if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = trim(nameI.value) || skuMap[s] || finalName;
+
+    if(editingId){
+      const idx = data.findIndex(x => x.id === editingId);
+      if(idx === -1){ showToast('⚠️ Không tìm thấy dòng để sửa'); exitEdit(); return; }
+
+      // nếu sửa thành SKU+HSD trùng dòng khác => hỏi gộp
+      const dup = data.find(x => x.id !== editingId && x.sku === s && x.hsd === h);
+      if(dup){
+        const ok = await openConfirm({
+          title:'Trùng SKU + HSD',
+          text:'Đã có dòng khác cùng SKU và HSD. Bạn muốn gộp (xoá dòng đang sửa)?',
+          okText:'Gộp',
+          cancelText:'Không'
+        });
+        if(ok){
+          dup.name = skuMap[s] || finalName;
+          data.splice(idx, 1);
+          saveStorage();
+          render();
+          showToast('✅ Đã gộp');
+          exitEdit();
+        }
+        return;
+      }
+
+      data[idx].sku = s;
+      data[idx].hsd = h;
+      data[idx].name = skuMap[s] || finalName;
+
+      saveStorage();
+      render();
+      showToast('✅ Đã cập nhật');
+      exitEdit();
+      return;
+    }
+
+    // create: nếu trùng sku+hsd -> hỏi update hay thêm
+    const exist = data.find(x => x.sku === s && x.hsd === h);
+    if(exist){
+      const ok = await openConfirm({
+        title:'Đã tồn tại',
+        text:'Dòng này (cùng SKU + HSD) đã có. Cập nhật tên cho dòng đó?',
+        okText:'Cập nhật',
+        cancelText:'Thêm mới'
+      });
+
+      if(ok){
+        exist.name = skuMap[s] || finalName;
+      }else{
+        data.push({ id: uid(), sku:s, name: skuMap[s] || finalName, hsd:h, createdAt: now() });
+      }
+
+      saveStorage();
+      render();
+      showToast('✅ Xong');
+      skuI.value=''; nameI.value=''; hsdI.value='';
+      return;
+    }
+
+    data.push({ id: uid(), sku:s, name: skuMap[s] || finalName, hsd:h, createdAt: now() });
+    saveStorage();
+    render();
+    showToast('✅ Đã lưu');
+    skuI.value=''; nameI.value=''; hsdI.value='';
+  }
+
+  async function deleteById(id){
+    const item = data.find(x => x.id === id);
+    if(!item) return;
+
+    const ok = await openConfirm({
+      title:'Xoá dòng?',
+      text:`Xoá "${item.name}" (SKU ${item.sku}, HSD ${fmtDMY(item.hsd)})?`,
+      okText:'Xoá',
+      cancelText:'Huỷ'
+    });
+    if(!ok) return;
+
+    data = data.filter(x => x.id !== id);
+    saveStorage();
+    render();
+    showToast('🗑️ Đã xoá');
+    if(editingId === id) exitEdit();
+  }
+
+  // ========= Render =========
+  function computeSummary(items){
+    let expired=0, le7=0, le30=0;
+    items.forEach(it => {
+      const d = daysLeft(it.hsd);
+      if(d < 0) expired++;
+      if(d >= 0 && d <= 7) le7++;
+      if(d >= 0 && d <= 30) le30++;
+    });
+    sumTotal.textContent = String(items.length);
+    sumExpired.textContent = String(expired);
+    sum7.textContent = String(le7);
+    sum30.textContent = String(le30);
+  }
+
+  function render(){
+    data = (Array.isArray(data)?data:[]).filter(x => x && x.id && x.sku && validISODate(x.hsd));
+    computeSummary(data);
+
+    const key = trim(searchI.value).toLowerCase();
+    const filtered = data.filter(it => {
+      if(!key) return true;
+      const hay = `${it.name} ${it.sku} ${it.hsd} ${fmtDMY(it.hsd)}`.toLowerCase();
+      return hay.includes(key);
+    });
+
+    // sort theo nguy hiểm trước: hết hạn -> sắp -> xa
+    filtered.sort((a,b) => {
+      const da = daysLeft(a.hsd);
+      const db = daysLeft(b.hsd);
+      if(da !== db) return da - db;
+      return a.sku.localeCompare(b.sku);
+    });
+
+    listEl.innerHTML = '';
+
+    if(filtered.length === 0){
+      const empty = document.createElement('div');
+      empty.style.textAlign = 'center';
+      empty.style.color = '#64748b';
+      empty.style.fontWeight = '900';
+      empty.style.padding = '18px 8px';
+      empty.textContent = key ? 'Không tìm thấy kết quả.' : 'Chưa có dữ liệu. Nhập SKU + HSD để lưu.';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+
+    filtered.forEach(it => {
+      const d = daysLeft(it.hsd);
+      const st = statusFor(d);
+
+      const card = document.createElement('div');
+      card.className = 'item ' + st.cls;
+
+      const name = document.createElement('div');
+      name.className = 'p-name';
+      name.textContent = it.name || 'Sản phẩm';
+
+      const skuLine = document.createElement('div');
+      const sku = document.createElement('span');
+      sku.className = 'p-sku';
+      sku.textContent = it.sku;
+      skuLine.appendChild(sku);
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.appendChild(document.createTextNode('HSD: '));
+      const b = document.createElement('b');
+      b.textContent = fmtDMY(it.hsd);
+      meta.appendChild(b);
+
+      const status = document.createElement('div');
+      status.className = 't-status ' + st.tcls;
+      status.textContent = st.text;
+
+      const actions = document.createElement('div');
+      actions.className = 'action-btns';
+
+      const btnCopy = document.createElement('div');
+      btnCopy.className = 'icon-btn';
+      btnCopy.title = 'Copy SKU';
+      btnCopy.textContent = '📋';
+      btnCopy.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(it.sku); showToast('📋 Đã copy SKU'); }
+        catch { showToast('⚠️ Clipboard bị chặn'); }
+      });
+
+      const btnEdit = document.createElement('div');
+      btnEdit.className = 'icon-btn';
+      btnEdit.title = 'Sửa';
+      btnEdit.textContent = '✏️';
+      btnEdit.addEventListener('click', () => enterEdit(it.id));
+
+      const btnDel = document.createElement('div');
+      btnDel.className = 'icon-btn danger';
+      btnDel.title = 'Xoá';
+      btnDel.textContent = '🗑️';
+      btnDel.addEventListener('click', () => deleteById(it.id));
+
+      actions.appendChild(btnCopy);
+      actions.appendChild(btnEdit);
+      actions.appendChild(btnDel);
+
+      card.appendChild(name);
+      card.appendChild(skuLine);
+      card.appendChild(meta);
+      card.appendChild(status);
+      card.appendChild(actions);
+
+      frag.appendChild(card);
+    });
+
+    listEl.appendChild(frag);
+  }
+
+  // ========= CSV =========
+  function detectDelimiter(text){
+    const cleaned = text.replace(/^\uFEFF/, '');
+    const lines = cleaned.split(/\r?\n/).filter(l => l.trim() !== '');
+    const first = lines[0] || '';
+    const c = (first.match(/,/g) || []).length;
+    const s = (first.match(/;/g) || []).length;
+    return s > c ? ';' : ',';
+  }
+
+  function parseCSV(text, delimiter){
+    // Parser CSV hỗ trợ quotes + delimiter trong quotes + xuống dòng trong quotes
+    const rows = [];
+    let row = [];
+    let field = '';
+    let i = 0;
+    let inQuotes = false;
+
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    while(i < text.length){
+      const ch = text[i];
+
+      if(inQuotes){
+        if(ch === '"'){
+          if(text[i+1] === '"'){ field += '"'; i += 2; continue; } // escaped quote
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }else{
+        if(ch === '"'){ inQuotes = true; i++; continue; }
+        if(ch === delimiter){ row.push(field); field = ''; i++; continue; }
+        if(ch === '\n'){
+          row.push(field);
+          if(row.some(v => trim(v) !== '')) rows.push(row);
+          row = []; field = ''; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+    }
+
+    row.push(field);
+    if(row.some(v => trim(v) !== '')) rows.push(row);
+    return rows;
+  }
+
+  function toCSVCell(v){
+    v = (v ?? '').toString();
+    const needs = /[",;\n\r]/.test(v);
+    v = v.replace(/"/g, '""');
+    return needs ? `"${v}"` : v;
+  }
+
+  async function importCSV(file){
+    try{
+      const text = await file.text();
+      const delimiter = detectDelimiter(text);
+      const rows = parseCSV(text.replace(/^\uFEFF/, ''), delimiter);
+
+      if(rows.length === 0){ showToast('⚠️ CSV trống'); return; }
+
+      const header = rows[0].map(h => trim(h).toLowerCase());
+      let start = 0;
+      let idxSku = 0, idxName = 1, idxHsd = 2;
+
+      const hasHeader = header.includes('sku') || header.includes('barcode') || header.includes('name') || header.includes('hsd') || header.includes('expiry') || header.includes('exp');
+      if(hasHeader){
+        idxSku = header.indexOf('sku'); if(idxSku < 0) idxSku = header.indexOf('barcode');
+        idxName = header.indexOf('name');
+        idxHsd = header.indexOf('hsd'); if(idxHsd < 0) idxHsd = header.indexOf('expiry'); if(idxHsd < 0) idxHsd = header.indexOf('exp');
+        if(idxSku < 0) idxSku = 0;
+        if(idxName < 0) idxName = 1;
+        if(idxHsd < 0) idxHsd = 2;
+        start = 1;
+      }
+
+      let added=0, updated=0, skipped=0;
+
+      for(let r=start; r<rows.length; r++){
+        const row = rows[r];
+        const s = trim(row[idxSku] ?? '');
+        const n = trim(row[idxName] ?? '');
+        const h = normalizeDateToISO(row[idxHsd] ?? '');
+
+        if(!s || !validISODate(h)){ skipped++; continue; }
+
+        const finalName = n || skuMap[s] || 'Sản phẩm mới';
+        if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
+
+        const exist = data.find(x => x.sku === s && x.hsd === h);
+        if(exist){
+          exist.name = skuMap[s] || finalName;
+          updated++;
+        }else{
+          data.push({ id: uid(), sku:s, name: skuMap[s] || finalName, hsd:h, createdAt: now() });
+          added++;
+        }
+      }
+
+      saveStorage();
+      render();
+      showToast(`✅ Import: +${added} mới, ${updated} cập nhật, ${skipped} bỏ qua`);
+      log('Import done', {added, updated, skipped});
+    }catch(e){
+      log('Import FAIL:', e?.message || e);
+      showToast('❌ Import lỗi (bấm DEBUG xem log)');
+    }
+  }
+
+  function exportCSV(){
+    try{
+      const out = [...data].sort((a,b) => a.hsd.localeCompare(b.hsd));
+      let csv = '\uFEFF' + ['sku','name','hsd'].join(',') + '\n';
+      out.forEach(it => {
+        csv += [toCSVCell(it.sku), toCSVCell(it.name), toCSVCell(it.hsd)].join(',') + '\n';
+      });
+
+      // thử download trước
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kiem_date.csv';
+      a.rel = 'noopener';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+      showToast('📤 Đã xuất CSV');
+      log('Export download OK');
+    }catch(e){
+      log('Export download FAIL:', e?.message || e);
+      // fallback: mở tab để copy/share
+      try{
+        const out = [...data].sort((a,b) => a.hsd.localeCompare(b.hsd));
+        let csv = '\uFEFF' + ['sku','name','hsd'].join(',') + '\n';
+        out.forEach(it => { csv += [toCSVCell(it.sku), toCSVCell(it.name), toCSVCell(it.hsd)].join(',') + '\n'; });
+
+        const win = window.open('', '_blank');
+        if(!win){ showToast('❌ Bị chặn mở tab. Hãy mở bằng Safari/Chrome'); return; }
+        win.document.title = 'kiem_date.csv (copy)';
+        win.document.write('<pre style="white-space:pre-wrap;font-family:monospace;">' + escapeHtml(csv) + '</pre>');
+        showToast('📤 Mở CSV để copy/share');
+        log('Export fallback open tab OK');
+      }catch(e2){
+        log('Export fallback FAIL:', e2?.message || e2);
+        showToast('❌ Không xuất được (bấm DEBUG xem log)');
+      }
+    }
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ========= Clipboard paste =========
+  async function smartPaste(){
+    try{
+      const t = await navigator.clipboard.readText();
+      if(!t){ showToast('⚠️ Clipboard trống'); return; }
+      skuI.value = trim(t);
+      updateSuggestions();
+      hsdI.focus();
+      showToast('📋 Đã dán SKU');
+      log('Paste OK');
+    }catch(e){
+      log('Clipboard FAIL:', e?.message || e);
+      showToast('⚠️ Clipboard bị chặn');
+    }
+  }
+
+  // ========= Events =========
+  skuI.addEventListener('input', updateSuggestions);
+  searchI.addEventListener('input', render);
+
+  btnPaste.addEventListener('click', smartPaste);
+  btnSave.addEventListener('click', upsert);
+
+  btnCancelEdit.addEventListener('click', () => { exitEdit(); showToast('↩️ Đã huỷ sửa'); });
+  btnDeleteEdit.addEventListener('click', async () => { if(editingId) await deleteById(editingId); });
+
+  btnImport.addEventListener('click', () => csvIn.click());
+  csvIn.addEventListener('change', async () => {
+    const f = csvIn.files && csvIn.files[0];
+    if(!f) return;
+    await importCSV(f);
+    csvIn.value = ''; // cho phép import lại cùng file
+  });
+
+  btnExport.addEventListener('click', exportCSV);
+
+  btnClearAll.addEventListener('click', async () => {
+    const ok = await openConfirm({
+      title:'Xoá toàn bộ?',
+      text:'Bạn muốn xoá tất cả dữ liệu trong máy? (Không khôi phục được)',
+      okText:'Xoá ALL',
+      cancelText:'Huỷ'
+    });
+    if(!ok) return;
+    data = [];
+    skuMap = {};
+    editingId = null;
+    saveStorage();
+    render();
+    exitEdit();
+    showToast('🧹 Đã xoá toàn bộ');
+    log('Clear ALL');
+  });
+
+  btnDebug.addEventListener('click', () => {
+    const on = debugBox.style.display !== 'block';
+    debugBox.style.display = on ? 'block' : 'none';
+    debugBox.textContent = LOG.join('\n') || '(Chưa có log)';
+    showToast(on ? '📌 DEBUG: ON' : '📌 DEBUG: OFF', 900);
+  });
+
+  // ========= Init =========
+  log('Init. storageAvailable =', storageAvailable());
+  if(!storageAvailable()){
+    showToast('⚠️ localStorage bị chặn (mở Safari/Chrome thật, không ẩn danh/webview)', 2400);
+  }
+  loadStorage();
+  render();
+  showToast('✅ Sẵn sàng');
+})();
 </script>
 </body>
 </html>
