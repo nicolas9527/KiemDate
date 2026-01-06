@@ -763,61 +763,96 @@
     return needs ? `"${v}"` : v;
   }
 
-  async function importCSV(file){
-    try{
-      const text = await file.text();
-      const delimiter = detectDelimiter(text);
-      const rows = parseCSV(text.replace(/^\uFEFF/, ''), delimiter);
+async function importCSV(file){
+  try{
+    const text = await file.text();
+    const delimiter = detectDelimiter(text);
+    const rows = parseCSV(text.replace(/^\uFEFF/, ''), delimiter);
 
-      if(rows.length === 0){ showToast('⚠️ CSV trống'); return; }
+    if(rows.length === 0){ showToast('⚠️ CSV trống'); return; }
 
-      const header = rows[0].map(h => trim(h).toLowerCase());
-      let start = 0;
-      let idxSku = 0, idxName = 1, idxHsd = 2;
+    // Nhận header tiếng Anh + tiếng Việt
+    const header = rows[0].map(h => trim(h).toLowerCase());
+    const hasHeader =
+      header.includes('sku') || header.includes('barcode') || header.includes('name') ||
+      header.includes('hsd') || header.includes('expiry') || header.includes('exp') ||
+      header.includes('ma san pham') || header.includes('mã sản phẩm') ||
+      header.includes('ten san pham') || header.includes('tên sản phẩm') ||
+      header.includes('han su dung') || header.includes('hạn sử dụng');
 
-      const hasHeader = header.includes('sku') || header.includes('barcode') || header.includes('name') || header.includes('hsd') || header.includes('expiry') || header.includes('exp');
-      if(hasHeader){
-        idxSku = header.indexOf('sku'); if(idxSku < 0) idxSku = header.indexOf('barcode');
-        idxName = header.indexOf('name');
-        idxHsd = header.indexOf('hsd'); if(idxHsd < 0) idxHsd = header.indexOf('expiry'); if(idxHsd < 0) idxHsd = header.indexOf('exp');
-        if(idxSku < 0) idxSku = 0;
-        if(idxName < 0) idxName = 1;
-        if(idxHsd < 0) idxHsd = 2;
-        start = 1;
+    let start = hasHeader ? 1 : 0;
+
+    // Xác định index cột cho SKU/NAME/HSD (nếu có)
+    const colIndex = (keys, fallback) => {
+      for (const k of keys) {
+        const idx = header.indexOf(k);
+        if (idx >= 0) return idx;
       }
+      return fallback;
+    };
 
-      let added=0, updated=0, skipped=0;
+    const idxSku = hasHeader
+      ? colIndex(['sku','barcode','ma san pham','mã sản phẩm'], 0)
+      : 0;
 
-      for(let r=start; r<rows.length; r++){
-        const row = rows[r];
-        const s = trim(row[idxSku] ?? '');
-        const n = trim(row[idxName] ?? '');
-        const h = normalizeDateToISO(row[idxHsd] ?? '');
+    const idxName = hasHeader
+      ? colIndex(['name','ten san pham','tên sản phẩm'], 1)
+      : 1;
 
-        if(!s || !validISODate(h)){ skipped++; continue; }
+    const idxHsd = hasHeader
+      ? colIndex(['hsd','expiry','exp','han su dung','hạn sử dụng'], 2)
+      : 2;
 
+    let mapAdded = 0;
+    let added = 0, updated = 0, skipped = 0;
+
+    for(let r=start; r<rows.length; r++){
+      const row = rows[r];
+      if(!row || row.length === 0) continue;
+
+      const s = trim(row[idxSku] ?? '');
+      const n = trim(row[idxName] ?? '');
+
+      if(!s){ skipped++; continue; }
+
+      // ✅ Case 1: CSV 2 cột (SKU, NAME) → chỉ cập nhật skuMap
+      // Nếu không có cột hsd hoặc hsd rỗng -> coi như file danh mục
+      const rawH = row[idxHsd];
+      const h = normalizeDateToISO(rawH ?? '');
+
+      if(!rawH || !trim(rawH) || !validISODate(h)){
+        // update skuMap
         const finalName = n || skuMap[s] || 'Sản phẩm mới';
-        if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
-
-        const exist = data.find(x => x.sku === s && x.hsd === h);
-        if(exist){
-          exist.name = skuMap[s] || finalName;
-          updated++;
-        }else{
-          data.push({ id: uid(), sku:s, name: skuMap[s] || finalName, hsd:h, createdAt: now() });
-          added++;
+        if(!skuMap[s] || (n && n !== skuMap[s])) {
+          skuMap[s] = finalName;
+          mapAdded++;
         }
+        continue;
       }
 
-      saveStorage();
-      render();
-      showToast(`✅ Import: +${added} mới, ${updated} cập nhật, ${skipped} bỏ qua`);
-      log('Import done', {added, updated, skipped});
-    }catch(e){
-      log('Import FAIL:', e?.message || e);
-      showToast('❌ Import lỗi (bấm DEBUG xem log)');
+      // ✅ Case 2: CSV có HSD hợp lệ (SKU, NAME, HSD) → import vào data như bình thường
+      const finalName = n || skuMap[s] || 'Sản phẩm mới';
+      if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
+
+      const exist = data.find(x => x.sku === s && x.hsd === h);
+      if(exist){
+        exist.name = skuMap[s] || finalName;
+        updated++;
+      }else{
+        data.push({ id: uid(), sku:s, name: skuMap[s] || finalName, hsd:h, createdAt: now() });
+        added++;
+      }
     }
+
+    saveStorage();
+    render();
+    showToast(`✅ Import xong: Danh mục +${mapAdded}, HSD +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
+    log('Import done', {mapAdded, added, updated, skipped});
+  }catch(e){
+    log('Import FAIL:', e?.message || e);
+    showToast('❌ Import lỗi (bấm DEBUG xem log)');
   }
+}
 
   function exportCSV(){
     try{
