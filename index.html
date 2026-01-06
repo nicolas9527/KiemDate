@@ -29,25 +29,23 @@
         .paste { background: #81c784; }
         .save { background: linear-gradient(#43a047, #2e7d32); }
         
-        /* SEARCH & TOOLS */
-        .search-container { margin-top: 25px; margin-bottom: 10px; }
-        #searchInput { border-color: #81c784; height: 40px; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%232e7d32" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 10px center; padding-left: 35px; }
+        .search-container { margin-top: 25px; margin-bottom: 15px; }
+        #searchInput { border-color: #81c784; height: 45px; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%232e7d32" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 12px center; padding-left: 40px; }
         
-        .tools-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
-        .import-btn { background: #fff; border: 1px solid #2e7d32; color: #2e7d32; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; }
-        #sortSelect { padding: 8px; border-radius: 10px; border: 1px solid #a5d6a7; font-size: 13px; color: #2e7d32; flex: 1; }
+        .tools-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .tool-btn { background: #fff; border: 1.5px solid #2e7d32; color: #2e7d32; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        #sortSelect { padding: 8px; border-radius: 10px; border: 1.5px solid #a5d6a7; font-size: 13px; color: #2e7d32; flex: 1; }
 
         .item { background: #fff; border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 6px solid #a5d6a7; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .icon-btn { position: absolute; right: 10px; width: 34px; height: 34px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; }
+        .icon-btn { position: absolute; right: 10px; width: 34px; height: 34px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .del-btn { top: 12px; background: #ffeeee; color: #d32f2f; }
-        .copy-btn { bottom: 12px; background: #e8f5e9; color: #2e7d32; }
         
         .warn-today { border-left-color: #ff5722; background: #fff5f2; }
         .warn7 { border-left-color: #c62828; }
         .warn30 { border-left-color: #fbc02d; }
         .expired-txt { color: #b71c1c; font-weight: 900; }
         .today-txt { color: #ff5722; font-weight: 800; }
-        .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; margin-bottom: 4px; padding-right: 30px;}
+        .p-name { font-size: 17px; color: #1b5e20; font-weight: 700; margin-bottom: 4px; padding-right: 35px;}
         .p-sku { color: #666; font-size: 12px; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
     </style>
 </head>
@@ -69,15 +67,16 @@
     </div>
 
     <div class="search-container">
-        <input id="searchInput" type="text" placeholder="Tìm tên hoặc SKU trong danh sách..." oninput="render()">
+        <input id="searchInput" type="text" placeholder="Tìm tên hoặc SKU..." oninput="render()">
     </div>
 
     <div class="tools-container">
         <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleFile(this)">
-        <button class="import-btn" onclick="document.getElementById('csvFile').click()">📥 Nhập File</button>
+        <button class="tool-btn" onclick="document.getElementById('csvFile').click()">📥 Nhập</button>
+        <button class="tool-btn" onclick="exportToCSV()">📤 Xuất File</button>
         <select id="sortSelect" onchange="render()">
-            <option value="date-asc">Hạn dùng (Gần → Xa)</option>
-            <option value="name-asc">Tên (A → Z)</option>
+            <option value="date-asc">Hạn gần trước</option>
+            <option value="name-asc">Tên A-Z</option>
         </select>
     </div>
 
@@ -89,12 +88,12 @@
     let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
     const skuInput = document.getElementById('sku'), nameInput = document.getElementById('name'), hsdInput = document.getElementById('hsd'), sugDiv = document.getElementById('suggestions');
 
-    // GỢI Ý KHI NHẬP SKU
+    // GỢI Ý SKU
     skuInput.addEventListener('input', () => {
-        const val = skuInput.value.trim().toLowerCase();
+        const val = skuInput.value.trim();
         sugDiv.innerHTML = '';
         if (val.length >= 3) {
-            const matches = Object.keys(skuMap).filter(s => s.toLowerCase().includes(val));
+            const matches = Object.keys(skuMap).filter(s => s.toLowerCase().includes(val.toLowerCase()));
             if (matches.length > 0) {
                 sugDiv.style.display = 'block';
                 matches.forEach(m => {
@@ -111,16 +110,15 @@
                 });
             } else { sugDiv.style.display = 'none'; }
         } else { sugDiv.style.display = 'none'; }
-        if(skuMap[skuInput.value.trim()]) nameInput.value = skuMap[skuInput.value.trim()];
+        if(skuMap[val]) nameInput.value = skuMap[val];
     });
 
     // CHỐNG TRÙNG VÀ LƯU
     function save() {
         const s = skuInput.value.trim(), n = nameInput.value.trim(), h = hsdInput.value;
-        if(!s || !h) return alert("⚠️ Thiếu SKU hoặc HSD!");
+        if(!s || !h) return alert("⚠️ Thiếu mã hoặc ngày!");
         
-        const isDup = data.some(i => i.sku === s && i.hsd === h);
-        if(isDup) return alert("⚠️ Mã này với hạn dùng này đã có rồi!");
+        if(data.some(i => i.sku === s && i.hsd === h)) return alert("⚠️ Mã này và ngày này đã tồn tại!");
 
         skuMap[s] = n || "Sản phẩm mới";
         data.push({ sku: s, name: skuMap[s], hsd: h });
@@ -131,17 +129,45 @@
         render();
     }
 
+    // XUẤT FILE CSV SAO LƯU
+    function exportToCSV() {
+        if (data.length === 0) return alert("Danh sách trống, không có gì để xuất!");
+        
+        let csvContent = "\uFEFFsku,name,hsd\n"; // Thêm BOM để hiển thị đúng tiếng Việt
+        data.forEach(item => {
+            csvContent += `"${item.sku}","${item.name}","${item.hsd}"\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `sao_luu_date_${new Date().toLocaleDateString('vi-VN')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     // NHẬP FILE CSV
     function handleFile(input) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const lines = e.target.result.split(/\r?\n/);
             lines.forEach(line => {
-                const p = line.split(/[,;]/);
-                if(p.length >= 2 && p[0].toLowerCase() !== 'sku') skuMap[p[0].trim()] = p[1].trim();
+                const p = line.replace(/"/g, '').split(/[,;]/);
+                if(p.length >= 2 && p[0].toLowerCase() !== 'sku') {
+                    skuMap[p[0].trim()] = p[1].trim();
+                    // Nếu file có 3 cột (file backup), tự động nạp vào danh sách luôn
+                    if(p[2] && !data.some(i => i.sku === p[0] && i.hsd === p[2])) {
+                        data.push({ sku: p[0].trim(), name: p[1].trim(), hsd: p[2].trim() });
+                    }
+                }
             });
             localStorage.setItem('skuMap', JSON.stringify(skuMap));
-            alert("✅ Đã cập nhật danh sách gợi ý!");
+            localStorage.setItem('dates', JSON.stringify(data));
+            render();
+            alert("✅ Đã nhập dữ liệu thành công!");
         };
         reader.readAsText(input.files[0]);
     }
@@ -153,18 +179,16 @@
 
     function deleteItem(index) { if(confirm("Xóa mục này?")) { data.splice(index, 1); localStorage.setItem('dates', JSON.stringify(data)); render(); } }
 
-    // RENDER DANH SÁCH + TÌM KIẾM
     function render() {
         const listDiv = document.getElementById('list');
         const search = document.getElementById('searchInput').value.toLowerCase();
         listDiv.innerHTML = '';
         
         let filtered = data.filter(i => i.name.toLowerCase().includes(search) || i.sku.toLowerCase().includes(search));
-        
         const sort = document.getElementById('sortSelect').value;
         filtered.sort((a,b) => sort === 'date-asc' ? new Date(a.hsd)-new Date(b.hsd) : a.name.localeCompare(b.name,'vi'));
 
-        filtered.forEach((i, idx) => {
+        filtered.forEach((i) => {
             const diff = Math.ceil((new Date(i.hsd+'T23:59:59') - Date.now()) / 86400000);
             let cls = '', txt = `Còn ${diff} ngày`, tcls = '';
             
