@@ -235,23 +235,25 @@
     .t-orange{ color:var(--warn); }
     .t-ok{ color:var(--ok); }
 
-    /* ✅ Actions: Xoá ở góc phải trên (lùi vào bằng --actions-right) */
+    /* ✅ Actions: Xoá ở góc phải trên (THẲNG CỘT với copy) */
     .action-top{
       position:absolute;
       top:12px;
       right:var(--actions-right);
+
       display:flex;
       flex-direction:column;
       gap:8px;
-      align-items:center;
-      width:56px;
+
+      align-items:flex-end;  /* ✅ canh phải, không bị lệch */
+      width:auto;            /* ✅ bỏ width cố định */
       z-index:2;
     }
 
     /* ✅ Actions: Sửa (trái) + Copy (phải) nằm ngang, copy thẳng hàng với xoá */
     .action-bottom{
       position:absolute;
-      right:var(--actions-right); /* ✅ cùng cột với action-top => copy thẳng hàng với xoá */
+      right:var(--actions-right); /* ✅ cùng cột => thẳng hàng */
       bottom:12px;
       display:flex;
       flex-direction:row;
@@ -281,10 +283,10 @@
 
     @media (max-width: 380px){
       .item{ padding-right:90px; }
-      .action-top{ width:52px; gap:7px; }
+      .action-top{ gap:7px; }    /* ✅ KHÔNG width */
       .action-bottom{ gap:7px; }
       .icon-btn{ width:36px; height:36px; font-size:16px; }
-      :root{ --actions-right: 14px; } /* ✅ màn nhỏ lùi nhẹ hơn */
+      :root{ --actions-right: 14px; }
     }
 
     .toast{
@@ -872,11 +874,9 @@
       status.className = 't-status ' + st.tcls;
       status.textContent = st.text;
 
-      // ✅ Cụm trên: chỉ Xoá
       const actTop = document.createElement('div');
       actTop.className = 'action-top';
 
-      // ✅ Cụm dưới: Sửa (trái) + Copy (phải) nằm ngang
       const actBottom = document.createElement('div');
       actBottom.className = 'action-bottom';
 
@@ -903,7 +903,6 @@
 
       actTop.appendChild(btnDel);
 
-      // ✅ trái sửa - phải copy
       actBottom.appendChild(btnEdit);
       actBottom.appendChild(btnCopy);
 
