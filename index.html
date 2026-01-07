@@ -67,20 +67,20 @@
       text-align:center;
       display:block;
     }
-    input[type="date"]{ -webkit-appearance:none; min-height:50px; }
     input:focus{ border-color:var(--secondary); background:#fff; }
     input:focus::placeholder{ color:transparent; }
 
     /* ✅ FIX iOS: căn giữa chữ trong input date (HSD) */
     input[type="date"]{
       height:50px;
-      line-height:50px;              /* căn giữa theo chiều cao */
-      padding:0 14px;                /* giống input khác */
+      line-height:50px;
+      padding:0 14px;
       display:flex;
       align-items:center;
       justify-content:center;
       -webkit-appearance:none;
       appearance:none;
+      min-height:50px;
     }
     input[type="date"]::-webkit-date-and-time-value{
       height:50px;
@@ -197,7 +197,7 @@
       background:#fff;
       border-radius:20px;
       padding:16px;
-      padding-right:78px;
+      padding-right:78px; /* chừa chỗ cho nút bên phải */
       margin-bottom:12px;
       position:relative;
       border-left:6px solid #d1d9e0;
@@ -235,7 +235,8 @@
     .t-orange{ color:var(--warn); }
     .t-ok{ color:var(--ok); }
 
-    .action-btns{
+    /* ✅ Actions tách 2 cụm: Xoá trên - Copy/Sửa dưới */
+    .action-top{
       position:absolute;
       top:12px;
       right:10px;
@@ -244,7 +245,20 @@
       gap:8px;
       align-items:center;
       width:56px;
+      z-index:2;
     }
+    .action-bottom{
+      position:absolute;
+      right:10px;
+      bottom:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
+      width:56px;
+      z-index:2;
+    }
+
     .icon-btn{
       width:38px;
       height:38px;
@@ -264,7 +278,7 @@
 
     @media (max-width: 380px){
       .item{ padding-right:72px; }
-      .action-btns{ right:8px; gap:7px; width:52px; }
+      .action-top, .action-bottom{ right:8px; width:52px; gap:7px; }
       .icon-btn{ width:36px; height:36px; font-size:16px; }
     }
 
@@ -318,7 +332,6 @@
       <div class="input-group">
         <label>Mã SKU / Barcode</label>
 
-        <!-- ✅ BÀN PHÍM SỐ + GIỮ STYLE ĐẸP -->
         <input id="sku"
                type="tel"
                inputmode="numeric"
@@ -639,9 +652,6 @@
     if(!e.target.closest('.input-group')) hideSuggestions();
   });
 
-  // ✅ OPTIONAL: chặn ký tự không phải số (nếu muốn)
-  // skuI.addEventListener('input', () => { skuI.value = skuI.value.replace(/\D/g, ''); });
-
   // ========= Edit mode =========
   function enterEdit(id){
     const item = data.find(x => x.id === id);
@@ -857,8 +867,13 @@
       status.className = 't-status ' + st.tcls;
       status.textContent = st.text;
 
-      const actions = document.createElement('div');
-      actions.className = 'action-btns';
+      // ✅ Cụm trên: chỉ Xoá
+      const actTop = document.createElement('div');
+      actTop.className = 'action-top';
+
+      // ✅ Cụm dưới: Copy + Sửa
+      const actBottom = document.createElement('div');
+      actBottom.className = 'action-bottom';
 
       const btnCopy = document.createElement('div');
       btnCopy.className = 'icon-btn';
@@ -881,15 +896,17 @@
       btnDel.textContent = '🗑️';
       btnDel.addEventListener('click', () => deleteById(it.id));
 
-      actions.appendChild(btnCopy);
-      actions.appendChild(btnEdit);
-      actions.appendChild(btnDel);
+      // Gắn đúng vị trí
+      actTop.appendChild(btnDel);
+      actBottom.appendChild(btnCopy);
+      actBottom.appendChild(btnEdit);
 
       card.appendChild(name);
       card.appendChild(skuLine);
       card.appendChild(meta);
       card.appendChild(status);
-      card.appendChild(actions);
+      card.appendChild(actTop);
+      card.appendChild(actBottom);
 
       frag.appendChild(card);
     });
