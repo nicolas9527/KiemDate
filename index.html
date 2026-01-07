@@ -71,6 +71,31 @@
     input:focus{ border-color:var(--secondary); background:#fff; }
     input:focus::placeholder{ color:transparent; }
 
+    /* ✅ FIX iOS: căn giữa chữ trong input date (HSD) */
+    input[type="date"]{
+      height:50px;
+      line-height:50px;              /* căn giữa theo chiều cao */
+      padding:0 14px;                /* giống input khác */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      -webkit-appearance:none;
+      appearance:none;
+    }
+    input[type="date"]::-webkit-date-and-time-value{
+      height:50px;
+      line-height:50px;
+      text-align:center;
+      margin:0;
+      padding:0;
+      /* nếu iOS bạn vẫn lệch nhẹ thì mở dòng dưới */
+      /* transform: translateY(1px); */
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator{
+      margin:0;
+      padding:0;
+    }
+
     .suggestions{
       position:absolute;
       top:76px;
