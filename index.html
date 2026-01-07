@@ -54,7 +54,6 @@
       margin:0 0 6px 8px;
     }
 
-    /* ✅ FIX: thêm tel/number để input SKU đẹp như text */
     input[type="text"], input[type="tel"], input[type="number"], input[type="date"]{
       width:100%;
       height:50px;
@@ -88,7 +87,6 @@
       text-align:center;
       margin:0;
       padding:0;
-      /* nếu iOS bạn vẫn lệch nhẹ thì mở dòng dưới */
       /* transform: translateY(1px); */
     }
     input[type="date"]::-webkit-calendar-picker-indicator{
@@ -197,7 +195,7 @@
       background:#fff;
       border-radius:20px;
       padding:16px;
-      padding-right:78px; /* chừa chỗ cho nút bên phải */
+      padding-right:96px; /* ✅ chừa chỗ cho cụm nút bên phải (xoá trên + 2 nút dưới ngang) */
       margin-bottom:12px;
       position:relative;
       border-left:6px solid #d1d9e0;
@@ -235,7 +233,7 @@
     .t-orange{ color:var(--warn); }
     .t-ok{ color:var(--ok); }
 
-    /* ✅ Actions tách 2 cụm: Xoá trên - Copy/Sửa dưới */
+    /* ✅ Actions: Xoá ở góc phải trên */
     .action-top{
       position:absolute;
       top:12px;
@@ -247,15 +245,18 @@
       width:56px;
       z-index:2;
     }
+
+    /* ✅ Actions: Sửa (trái) + Copy (phải) nằm ngang ở góc phải dưới */
     .action-bottom{
       position:absolute;
       right:10px;
       bottom:12px;
       display:flex;
-      flex-direction:column;
+      flex-direction:row;    /* ✅ nằm ngang */
       gap:8px;
       align-items:center;
-      width:56px;
+      justify-content:flex-end;
+      width:auto;            /* ✅ không ép 56px */
       z-index:2;
     }
 
@@ -277,8 +278,9 @@
     .icon-btn.danger{ background:#fff0f0; border-color:#ffd0d0; }
 
     @media (max-width: 380px){
-      .item{ padding-right:72px; }
-      .action-top, .action-bottom{ right:8px; width:52px; gap:7px; }
+      .item{ padding-right:90px; }
+      .action-top{ right:8px; width:52px; gap:7px; }
+      .action-bottom{ right:8px; gap:7px; }
       .icon-btn{ width:36px; height:36px; font-size:16px; }
     }
 
@@ -871,9 +873,15 @@
       const actTop = document.createElement('div');
       actTop.className = 'action-top';
 
-      // ✅ Cụm dưới: Copy + Sửa
+      // ✅ Cụm dưới: Sửa (trái) + Copy (phải) nằm ngang
       const actBottom = document.createElement('div');
       actBottom.className = 'action-bottom';
+
+      const btnEdit = document.createElement('div');
+      btnEdit.className = 'icon-btn';
+      btnEdit.title = 'Sửa';
+      btnEdit.textContent = '✏️';
+      btnEdit.addEventListener('click', () => enterEdit(it.id));
 
       const btnCopy = document.createElement('div');
       btnCopy.className = 'icon-btn';
@@ -884,22 +892,17 @@
         catch { showToast('⚠️ Clipboard bị chặn'); }
       });
 
-      const btnEdit = document.createElement('div');
-      btnEdit.className = 'icon-btn';
-      btnEdit.title = 'Sửa';
-      btnEdit.textContent = '✏️';
-      btnEdit.addEventListener('click', () => enterEdit(it.id));
-
       const btnDel = document.createElement('div');
       btnDel.className = 'icon-btn danger';
       btnDel.title = 'Xoá';
       btnDel.textContent = '🗑️';
       btnDel.addEventListener('click', () => deleteById(it.id));
 
-      // Gắn đúng vị trí
       actTop.appendChild(btnDel);
-      actBottom.appendChild(btnCopy);
+
+      // ✅ trái sửa - phải copy
       actBottom.appendChild(btnEdit);
+      actBottom.appendChild(btnCopy);
 
       card.appendChild(name);
       card.appendChild(skuLine);
