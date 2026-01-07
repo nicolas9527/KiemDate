@@ -288,7 +288,12 @@
     <div class="input-box">
       <div class="input-group">
         <label>Mã SKU / Barcode</label>
-        <input id="sku" type="text" placeholder="Nhập hoặc quét mã..." autocomplete="off" />
+      <input id="sku"
+       type="tel"
+       inputmode="numeric"
+       pattern="[0-9]*"
+       placeholder="Nhập hoặc quét mã..."
+       autocomplete="off" />
         <div id="suggestions" class="suggestions"></div>
       </div>
 
