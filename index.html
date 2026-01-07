@@ -16,6 +16,9 @@
     :root {
       --primary:#1976d2; --secondary:#64b5f6; --bg:#f0f4f8; --card:#ffffff;
       --danger:#d32f2f; --warn:#ef6c00; --ok:#1b5e20;
+
+      /* ✅ chỉnh số này để “lùi vô” cụm icon bên phải */
+      --actions-right: 16px;
     }
     *{ box-sizing:border-box; }
     body{
@@ -87,7 +90,6 @@
       text-align:center;
       margin:0;
       padding:0;
-      /* transform: translateY(1px); */
     }
     input[type="date"]::-webkit-calendar-picker-indicator{
       margin:0;
@@ -195,7 +197,7 @@
       background:#fff;
       border-radius:20px;
       padding:16px;
-      padding-right:96px; /* ✅ chừa chỗ cho cụm nút bên phải (xoá trên + 2 nút dưới ngang) */
+      padding-right:96px;
       margin-bottom:12px;
       position:relative;
       border-left:6px solid #d1d9e0;
@@ -233,11 +235,11 @@
     .t-orange{ color:var(--warn); }
     .t-ok{ color:var(--ok); }
 
-    /* ✅ Actions: Xoá ở góc phải trên */
+    /* ✅ Actions: Xoá ở góc phải trên (lùi vào bằng --actions-right) */
     .action-top{
       position:absolute;
       top:12px;
-      right:10px;
+      right:var(--actions-right);
       display:flex;
       flex-direction:column;
       gap:8px;
@@ -246,17 +248,17 @@
       z-index:2;
     }
 
-    /* ✅ Actions: Sửa (trái) + Copy (phải) nằm ngang ở góc phải dưới */
+    /* ✅ Actions: Sửa (trái) + Copy (phải) nằm ngang, copy thẳng hàng với xoá */
     .action-bottom{
       position:absolute;
-      right:10px;
+      right:var(--actions-right); /* ✅ cùng cột với action-top => copy thẳng hàng với xoá */
       bottom:12px;
       display:flex;
-      flex-direction:row;    /* ✅ nằm ngang */
+      flex-direction:row;
       gap:8px;
       align-items:center;
       justify-content:flex-end;
-      width:auto;            /* ✅ không ép 56px */
+      width:auto;
       z-index:2;
     }
 
@@ -279,9 +281,10 @@
 
     @media (max-width: 380px){
       .item{ padding-right:90px; }
-      .action-top{ right:8px; width:52px; gap:7px; }
-      .action-bottom{ right:8px; gap:7px; }
+      .action-top{ width:52px; gap:7px; }
+      .action-bottom{ gap:7px; }
       .icon-btn{ width:36px; height:36px; font-size:16px; }
+      :root{ --actions-right: 14px; } /* ✅ màn nhỏ lùi nhẹ hơn */
     }
 
     .toast{
