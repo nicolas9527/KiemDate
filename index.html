@@ -453,6 +453,15 @@
   }
   const trim = (s) => (s ?? '').toString().trim();
 
+  // ✅ Debounce: giúp gõ search / sku mượt hơn khi dữ liệu nhiều
+  function debounce(fn, ms = 120) {
+    let t = null;
+    return (...args) => {
+      if (t) clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    };
+  }
+
   function showToast(msg, ms=1500){
     toastEl.textContent = msg;
     toastEl.style.display = 'block';
@@ -1074,7 +1083,7 @@
       const t = await navigator.clipboard.readText();
       if(!t){ showToast('⚠️ Clipboard trống'); return; }
       skuI.value = trim(t);
-      updateSuggestions();
+      updateSuggestions(); // paste xong thì cập nhật ngay
       hsdI.focus();
       showToast('📋 Đã dán SKU');
     }catch(e){
@@ -1083,8 +1092,12 @@
   }
 
   // ========= Events =========
-  skuI.addEventListener('input', updateSuggestions);
-  searchI.addEventListener('input', render);
+  // ✅ Debounced handlers
+  const updateSuggestionsDebounced = debounce(updateSuggestions, 80);
+  const renderDebounced = debounce(render, 120);
+
+  skuI.addEventListener('input', updateSuggestionsDebounced);
+  searchI.addEventListener('input', renderDebounced);
 
   btnPaste.addEventListener('click', smartPaste);
   btnSave.addEventListener('click', upsert);
