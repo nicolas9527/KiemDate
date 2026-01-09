@@ -137,6 +137,7 @@
       color:#fff;
       user-select:none;
       -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
     }
     .btn:active{ transform:scale(0.99); }
     .btn-paste{ background:var(--secondary); }
@@ -176,6 +177,7 @@
       font-size:13px;
       font-weight:900;
       cursor:pointer;
+      touch-action:manipulation;
     }
     .tool-btn.primary{ background:var(--primary); color:#fff; }
     .tool-btn.danger{ border-color:var(--danger); color:var(--danger); }
@@ -245,15 +247,15 @@
       flex-direction:column;
       gap:8px;
 
-      align-items:flex-end;  /* ✅ canh phải, không bị lệch */
-      width:auto;            /* ✅ bỏ width cố định */
+      align-items:flex-end;
+      width:auto;
       z-index:2;
     }
 
     /* ✅ Actions: Sửa (trái) + Copy (phải) nằm ngang, copy thẳng hàng với xoá */
     .action-bottom{
       position:absolute;
-      right:var(--actions-right); /* ✅ cùng cột => thẳng hàng */
+      right:var(--actions-right);
       bottom:12px;
       display:flex;
       flex-direction:row;
@@ -264,26 +266,41 @@
       z-index:2;
     }
 
+    /* ✅ icon button (đổi div -> button) */
     .icon-btn{
       width:38px;
       height:38px;
       border-radius:12px;
+
       background:#eef6ff;
       border:1px solid #cfe6ff;
+
       display:flex;
       align-items:center;
       justify-content:center;
+
       cursor:pointer;
       user-select:none;
+
       font-size:17px;
       box-shadow:0 2px 8px rgba(0,0,0,0.06);
+
+      padding:0;
+      outline:none;
+      color:inherit;
+      font-family:inherit;
+
+      appearance:none;
+      -webkit-appearance:none;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
     }
     .icon-btn:active{ transform:scale(0.98); }
     .icon-btn.danger{ background:#fff0f0; border-color:#ffd0d0; }
 
     @media (max-width: 380px){
       .item{ padding-right:90px; }
-      .action-top{ gap:7px; }    /* ✅ KHÔNG width */
+      .action-top{ gap:7px; }
       .action-bottom{ gap:7px; }
       .icon-btn{ width:36px; height:36px; font-size:16px; }
       :root{ --actions-right: 14px; }
@@ -889,13 +906,16 @@
       const actBottom = document.createElement('div');
       actBottom.className = 'action-bottom';
 
-      const btnEdit = document.createElement('div');
+      // ✅ div -> button
+      const btnEdit = document.createElement('button');
+      btnEdit.type = 'button';
       btnEdit.className = 'icon-btn';
       btnEdit.title = 'Sửa';
       btnEdit.textContent = '✏️';
       btnEdit.addEventListener('click', () => enterEdit(it.id));
 
-      const btnCopy = document.createElement('div');
+      const btnCopy = document.createElement('button');
+      btnCopy.type = 'button';
       btnCopy.className = 'icon-btn';
       btnCopy.title = 'Copy SKU';
       btnCopy.textContent = '📋';
@@ -904,14 +924,14 @@
         catch { showToast('⚠️ Clipboard bị chặn'); }
       });
 
-      const btnDel = document.createElement('div');
+      const btnDel = document.createElement('button');
+      btnDel.type = 'button';
       btnDel.className = 'icon-btn danger';
       btnDel.title = 'Xoá';
       btnDel.textContent = '🗑️';
       btnDel.addEventListener('click', () => deleteById(it.id));
 
       actTop.appendChild(btnDel);
-
       actBottom.appendChild(btnEdit);
       actBottom.appendChild(btnCopy);
 
@@ -1092,7 +1112,6 @@
   }
 
   // ========= Events =========
-  // ✅ Debounced handlers
   const updateSuggestionsDebounced = debounce(updateSuggestions, 80);
   const renderDebounced = debounce(render, 120);
 
