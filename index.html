@@ -345,6 +345,33 @@
     .modal h2{ margin:6px 4px 8px; font-size:16px; color:#0f172a; font-weight:1000; }
     .modal p{ margin:0 4px 12px; color:#6b7280; font-size:13px; font-weight:800; }
     .modal .btn-row{ margin-top:10px; }
+
+    /* ===== Clear (dấu X) cho input ===== */
+    .field{ position:relative; }
+    .field input{ padding-right:44px; } /* chừa chỗ cho nút X */
+
+    .clear-btn{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      width:30px;
+      height:30px;
+      border-radius:999px;
+      border:1px solid #dbe6f2;
+      background:#ffffff;
+      display:none;              /* chỉ hiện khi có chữ */
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-weight:1000;
+      color:#64748b;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    .clear-btn:active{ transform:translateY(-50%) scale(0.97); }
+    .field.has-value .clear-btn{ display:flex; }
   </style>
 </head>
 
@@ -356,19 +383,25 @@
       <div class="input-group">
         <label>Mã SKU / Barcode</label>
 
-        <input id="sku"
-               type="tel"
-               inputmode="numeric"
-               pattern="[0-9]*"
-               placeholder="Nhập hoặc quét mã..."
-               autocomplete="off" />
+        <div class="field">
+          <input id="sku"
+                 type="tel"
+                 inputmode="numeric"
+                 pattern="[0-9]*"
+                 placeholder="Nhập hoặc quét mã..."
+                 autocomplete="off" />
+          <button class="clear-btn" type="button" aria-label="Xoá ô SKU" data-clear="sku">✕</button>
+        </div>
 
         <div id="suggestions" class="suggestions"></div>
       </div>
 
       <div class="input-group">
         <label>Tên sản phẩm</label>
-        <input id="name" type="text" placeholder="Tên sản phẩm..." autocomplete="off" />
+        <div class="field">
+          <input id="name" type="text" placeholder="Tên sản phẩm..." autocomplete="off" />
+          <button class="clear-btn" type="button" aria-label="Xoá ô Tên" data-clear="name">✕</button>
+        </div>
       </div>
 
       <div class="input-group">
@@ -401,7 +434,11 @@
         <button id="btnExport" class="tool-btn primary" type="button">📤 XUẤT CSV</button>
         <button id="btnClearAll" class="tool-btn danger" type="button">🧹 XOÁ ALL</button>
       </div>
-      <input id="search" class="search-bar" type="text" placeholder="Tìm tên / SKU / HSD..." />
+
+      <div class="field">
+        <input id="search" class="search-bar" type="text" placeholder="Tìm tên / SKU / HSD..." />
+        <button class="clear-btn" type="button" aria-label="Xoá ô Tìm" data-clear="search">✕</button>
+      </div>
     </div>
 
     <div id="list"></div>
@@ -629,6 +666,39 @@
     skuMap = {};
   }
 
+  // ========= Clear X buttons =========
+  function syncClearState(){
+    document.querySelectorAll('.field').forEach(f => {
+      const input = f.querySelector('input');
+      if(!input) return;
+      f.classList.toggle('has-value', (input.value || '').trim().length > 0);
+    });
+  }
+
+  function clearInputById(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.value = '';
+    el.focus();
+
+    if(id === 'sku'){
+      hideSuggestions();
+      nameI.value = ''; // nếu muốn giữ tên khi xoá SKU: xoá dòng này
+    }
+    if(id === 'search'){
+      render(); // xoá search thì render lại full list
+    }
+    syncClearState();
+  }
+
+  // Click vào nút X
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.clear-btn');
+    if(!btn) return;
+    const id = btn.getAttribute('data-clear');
+    clearInputById(id);
+  });
+
   // ========= Suggestions =========
   function hideSuggestions(){ sugD.style.display='none'; sugD.innerHTML=''; }
 
@@ -673,6 +743,7 @@
         skuI.value = m.sku;
         if(m.name) nameI.value = m.name;
         hideSuggestions();
+        syncClearState();
         hsdI.focus();
       });
       sugD.appendChild(div);
@@ -696,6 +767,7 @@
     btnSave.textContent = '✅ Cập nhật';
     editRow.style.display = 'flex';
     hideSuggestions();
+    syncClearState();
     showToast('✏️ Đang sửa dòng');
   }
 
@@ -705,6 +777,7 @@
     editRow.style.display = 'none';
     skuI.value=''; nameI.value=''; hsdI.value='';
     hideSuggestions();
+    syncClearState();
   }
 
   // ========= Upsert =========
@@ -718,8 +791,8 @@
     const nIn = trim(nameI.value);
     const h = normalizeDateToISO(hsdI.value);
 
-    if(!s){ showToast('⚠️ Vui lòng nhập SKU'); skuI.focus(); return; }
-    if(!validISODate(h)){ showToast('⚠️ HSD không hợp lệ'); hsdI.focus(); return; }
+    if(!s){ showToast('⚠️ Vui lòng nhập SKU'); skuI.focus(); syncClearState(); return; }
+    if(!validISODate(h)){ showToast('⚠️ HSD không hợp lệ'); hsdI.focus(); syncClearState(); return; }
 
     const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
 
@@ -759,6 +832,7 @@
           data.splice(idx, 1);
           saveStorage();
           render();
+          syncClearState();
           showToast('✅ Đã gộp');
           exitEdit();
         }
@@ -771,6 +845,7 @@
 
       saveStorage();
       render();
+      syncClearState();
       showToast('✅ Đã cập nhật');
       exitEdit();
       return;
@@ -795,6 +870,7 @@
       render();
       showToast('✅ Xong');
       skuI.value=''; nameI.value=''; hsdI.value='';
+      syncClearState();
       return;
     }
 
@@ -803,6 +879,7 @@
     render();
     showToast('✅ Đã lưu');
     skuI.value=''; nameI.value=''; hsdI.value='';
+    syncClearState();
   }
 
   async function deleteById(id){
@@ -820,6 +897,7 @@
     data = data.filter(x => x.id !== id);
     saveStorage();
     render();
+    syncClearState();
     showToast('🗑️ Đã xoá');
     if(editingId === id) exitEdit();
   }
@@ -1068,6 +1146,7 @@
 
       saveStorage();
       render();
+      syncClearState();
       showToast(`✅ Import: Danh mục +${mapAdded}, HSD +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
     }catch(e){
       showToast('❌ Import lỗi');
@@ -1103,6 +1182,7 @@
       const t = await navigator.clipboard.readText();
       if(!t){ showToast('⚠️ Clipboard trống'); return; }
       skuI.value = trim(t);
+      syncClearState();
       updateSuggestions(); // paste xong thì cập nhật ngay
       hsdI.focus();
       showToast('📋 Đã dán SKU');
@@ -1115,8 +1195,9 @@
   const updateSuggestionsDebounced = debounce(updateSuggestions, 80);
   const renderDebounced = debounce(render, 120);
 
-  skuI.addEventListener('input', updateSuggestionsDebounced);
-  searchI.addEventListener('input', renderDebounced);
+  skuI.addEventListener('input', () => { syncClearState(); updateSuggestionsDebounced(); });
+  nameI.addEventListener('input', syncClearState);
+  searchI.addEventListener('input', () => { syncClearState(); renderDebounced(); });
 
   btnPaste.addEventListener('click', smartPaste);
   btnSave.addEventListener('click', upsert);
@@ -1148,6 +1229,7 @@
     saveStorage();
     render();
     exitEdit();
+    syncClearState();
     showToast('🧹 Đã xoá toàn bộ');
   });
 
@@ -1157,6 +1239,7 @@
   }
   loadStorage();
   render();
+  syncClearState();
 })();
 </script>
 </body>
