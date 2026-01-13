@@ -237,22 +237,18 @@
     .t-orange{ color:var(--warn); }
     .t-ok{ color:var(--ok); }
 
-    /* ✅ Actions: Xoá ở góc phải trên (THẲNG CỘT với copy) */
     .action-top{
       position:absolute;
       top:12px;
       right:var(--actions-right);
-
       display:flex;
       flex-direction:column;
       gap:8px;
-
       align-items:flex-end;
       width:auto;
       z-index:2;
     }
 
-    /* ✅ Actions: Sửa (trái) + Copy (phải) nằm ngang, copy thẳng hàng với xoá */
     .action-bottom{
       position:absolute;
       right:var(--actions-right);
@@ -266,30 +262,23 @@
       z-index:2;
     }
 
-    /* ✅ icon button (đổi div -> button) */
     .icon-btn{
       width:38px;
       height:38px;
       border-radius:12px;
-
       background:#eef6ff;
       border:1px solid #cfe6ff;
-
       display:flex;
       align-items:center;
       justify-content:center;
-
       cursor:pointer;
       user-select:none;
-
       font-size:17px;
       box-shadow:0 2px 8px rgba(0,0,0,0.06);
-
       padding:0;
       outline:none;
       color:inherit;
       font-family:inherit;
-
       appearance:none;
       -webkit-appearance:none;
       -webkit-tap-highlight-color:transparent;
@@ -324,6 +313,7 @@
       box-shadow:0 10px 30px rgba(0,0,0,0.25);
     }
 
+    /* ===== Modal ===== */
     .modal-backdrop{
       position:fixed;
       inset:0;
@@ -341,14 +331,37 @@
       border-radius:18px;
       padding:14px;
       box-shadow:0 20px 50px rgba(0,0,0,0.25);
+      position:relative;
     }
     .modal h2{ margin:6px 4px 8px; font-size:16px; color:#0f172a; font-weight:1000; }
     .modal p{ margin:0 4px 12px; color:#6b7280; font-size:13px; font-weight:800; }
     .modal .btn-row{ margin-top:10px; }
 
+    /* ✅ Nút X góc phải popup */
+    .modal-x{
+      position:absolute;
+      top:10px;
+      right:10px;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      border:none;
+      background:#f1f5f9;
+      color:#334155;
+      font-size:20px;
+      font-weight:1000;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    .modal-x:active{ transform:scale(0.95); }
+
     /* ===== Clear (dấu X) cho input ===== */
     .field{ position:relative; }
-    .field input{ padding-right:44px; } /* chừa chỗ cho nút X */
+    .field input{ padding-right:44px; }
 
     .clear-btn{
       position:absolute;
@@ -360,7 +373,7 @@
       border-radius:999px;
       border:1px solid #dbe6f2;
       background:#ffffff;
-      display:none;              /* chỉ hiện khi có chữ */
+      display:none;
       align-items:center;
       justify-content:center;
       font-size:18px;
@@ -446,12 +459,18 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- ✅ Modal dùng chung: confirm + popup chọn loại CSV -->
   <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal">
+      <button id="modalCloseX" class="modal-x" type="button" aria-label="Đóng popup">✕</button>
+
       <h2 id="modalTitle">Xác nhận</h2>
-      <p id="modalText">Bạn chắc chứ?</p>
+      <!-- ✅ bỏ chỗ chữ bạn khoanh: để trống -->
+      <p id="modalText"></p>
+
       <div class="btn-row">
         <button id="modalCancel" class="btn btn-cancel" type="button">Huỷ</button>
+        <button id="modalAlt" class="btn btn-save" type="button" style="display:none;">Tuỳ chọn</button>
         <button id="modalOk" class="btn btn-danger" type="button">Đồng ý</button>
       </div>
     </div>
@@ -488,15 +507,17 @@
   const modalTitle = document.getElementById('modalTitle');
   const modalText = document.getElementById('modalText');
   const modalCancel = document.getElementById('modalCancel');
+  const modalAlt = document.getElementById('modalAlt');
   const modalOk = document.getElementById('modalOk');
+  const modalCloseX = document.getElementById('modalCloseX');
 
   // ========= Storage keys =========
   const KEY_V2 = 'kiemdate_v2';
   const KEY_V2_MAP = 'kiemdate_v2_skuMap';
 
   // ========= State =========
-  let data = [];     // {id, sku, name, hsd, createdAt}
-  let skuMap = {};   // {sku: name}
+  let data = [];     // {id, sku, name, hsd, createdAt}  (danh sách đã kiểm)
+  let skuMap = {};   // {sku: name}                      (danh sách sản phẩm)
   let editingId = null;
 
   // ========= Utils =========
@@ -507,7 +528,6 @@
   }
   const trim = (s) => (s ?? '').toString().trim();
 
-  // ✅ Debounce: giúp gõ search / sku mượt hơn khi dữ liệu nhiều
   function debounce(fn, ms = 120) {
     let t = null;
     return (...args) => {
@@ -523,30 +543,6 @@
     showToast._t = setTimeout(()=> toastEl.style.display='none', ms);
   }
 
-  function openConfirm({title='Xác nhận', text='Bạn chắc chứ?', okText='Đồng ý', cancelText='Huỷ'}){
-    return new Promise(resolve => {
-      modalTitle.textContent = title;
-      modalText.textContent = text;
-      modalOk.textContent = okText;
-      modalCancel.textContent = cancelText;
-      modalBackdrop.style.display = 'flex';
-
-      const cleanup = () => {
-        modalBackdrop.style.display = 'none';
-        modalCancel.removeEventListener('click', onCancel);
-        modalOk.removeEventListener('click', onOk);
-        modalBackdrop.removeEventListener('click', onBackdrop);
-      };
-      const onCancel = () => { cleanup(); resolve(false); };
-      const onOk = () => { cleanup(); resolve(true); };
-      const onBackdrop = (e) => { if(e.target === modalBackdrop){ cleanup(); resolve(false); } };
-
-      modalCancel.addEventListener('click', onCancel);
-      modalOk.addEventListener('click', onOk);
-      modalBackdrop.addEventListener('click', onBackdrop);
-    });
-  }
-
   function storageAvailable(){
     try{
       const k='__test__'+Math.random();
@@ -556,6 +552,97 @@
     }catch{ return false; }
   }
 
+  // ========= Modal controller (FIX: X / bấm ngoài đều resolve) =========
+  const modalCtl = {
+    active: false,
+    resolve: null,
+    cleanupFns: [],
+  };
+
+  function showModal(){
+    modalBackdrop.style.display = 'flex';
+    modalCtl.active = true;
+  }
+  function closeModal(resValue=null){
+    if(!modalCtl.active) return;
+    modalBackdrop.style.display = 'none';
+    modalCtl.active = false;
+
+    // cleanup handlers
+    modalCtl.cleanupFns.forEach(fn => { try{ fn(); }catch{} });
+    modalCtl.cleanupFns = [];
+
+    // resolve if exists
+    const r = modalCtl.resolve;
+    modalCtl.resolve = null;
+    if(typeof r === 'function') r(resValue);
+  }
+
+  // Bấm X -> huỷ (resolve null)
+  modalCloseX.addEventListener('click', () => closeModal(null));
+
+  // Bấm ra ngoài -> huỷ (resolve null)
+  modalBackdrop.addEventListener('click', (e) => {
+    if(e.target === modalBackdrop) closeModal(null);
+  });
+
+  function setBtn(btn, {show=true, text='', cls=''}){
+    btn.style.display = show ? '' : 'none';
+    if(text !== undefined) btn.textContent = text;
+    if(cls) btn.className = cls;
+  }
+
+  function openConfirm({title='Xác nhận', text='Bạn chắc chứ?', okText='Đồng ý', cancelText='Huỷ'}){
+    return new Promise(resolve => {
+      modalCtl.resolve = resolve;
+
+      modalTitle.textContent = title;
+      modalText.textContent = text || '';
+
+      setBtn(modalCancel, {show:true, text:cancelText, cls:'btn btn-cancel'});
+      setBtn(modalAlt, {show:false});
+      setBtn(modalOk, {show:true, text:okText, cls:'btn btn-danger'});
+
+      const onCancel = () => closeModal(false);
+      const onOk = () => closeModal(true);
+
+      modalCancel.addEventListener('click', onCancel);
+      modalOk.addEventListener('click', onOk);
+
+      modalCtl.cleanupFns.push(() => modalCancel.removeEventListener('click', onCancel));
+      modalCtl.cleanupFns.push(() => modalOk.removeEventListener('click', onOk));
+
+      showModal();
+    });
+  }
+
+  // Popup chọn 2 lựa chọn (A/B) - không chọn thì X / bấm ngoài để huỷ (null)
+  function openChoice2({title='Chọn loại', text='', aText='A', bText='B'}){
+    return new Promise(resolve => {
+      modalCtl.resolve = resolve;
+
+      modalTitle.textContent = title;
+      modalText.textContent = text || ''; // ✅ bỏ phần chữ dài => để rỗng
+
+      // ✅ bạn muốn "chọn thì mới xuất", không cần nút Huỷ -> ẩn cancel
+      setBtn(modalCancel, {show:false});
+      setBtn(modalAlt, {show:true, text:aText, cls:'btn btn-cancel'}); // xám
+      setBtn(modalOk, {show:true, text:bText, cls:'btn btn-danger'});  // đỏ
+
+      const onA = () => closeModal('a');
+      const onB = () => closeModal('b');
+
+      modalAlt.addEventListener('click', onA);
+      modalOk.addEventListener('click', onB);
+
+      modalCtl.cleanupFns.push(() => modalAlt.removeEventListener('click', onA));
+      modalCtl.cleanupFns.push(() => modalOk.removeEventListener('click', onB));
+
+      showModal();
+    });
+  }
+
+  // ========= Date utils =========
   function normalizeDateToISO(v){
     v = trim(v);
     if(!v) return '';
@@ -614,6 +701,7 @@
     return { cls:'', text:`✅ Còn ${d} ngày`, tcls:'t-ok' };
   }
 
+  // ========= Storage =========
   function saveStorage(){
     try{
       localStorage.setItem(KEY_V2, JSON.stringify(data));
@@ -683,15 +771,14 @@
 
     if(id === 'sku'){
       hideSuggestions();
-      nameI.value = ''; // nếu muốn giữ tên khi xoá SKU: xoá dòng này
+      nameI.value = '';
     }
     if(id === 'search'){
-      render(); // xoá search thì render lại full list
+      render();
     }
     syncClearState();
   }
 
-  // Click vào nút X
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.clear-btn');
     if(!btn) return;
@@ -794,6 +881,7 @@
     if(!s){ showToast('⚠️ Vui lòng nhập SKU'); skuI.focus(); syncClearState(); return; }
     if(!validISODate(h)){ showToast('⚠️ HSD không hợp lệ'); hsdI.focus(); syncClearState(); return; }
 
+    // ✅ luôn lưu vào danh sách sản phẩm (skuMap) để lần sau xuất DS sản phẩm (không trùng)
     const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
 
     if(skuMap[s] && nIn && skuMap[s] !== nIn){
@@ -811,7 +899,7 @@
       }
     }
 
-    if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) {
+    if(!skuMap[s] || (nIn && trim(nIn))){
       skuMap[s] = trim(nameI.value) || skuMap[s] || finalName;
     }
 
@@ -984,7 +1072,6 @@
       const actBottom = document.createElement('div');
       actBottom.className = 'action-bottom';
 
-      // ✅ div -> button
       const btnEdit = document.createElement('button');
       btnEdit.type = 'button';
       btnEdit.className = 'icon-btn';
@@ -1122,17 +1209,19 @@
         const rawH = row[idxHsd];
         const h = normalizeDateToISO(rawH ?? '');
 
+        // ✅ Dòng không có HSD: vẫn lưu vào danh sách sản phẩm
         if(!rawH || !trim(rawH) || !validISODate(h)){
           const finalName = n || skuMap[s] || 'Sản phẩm mới';
-          if(!skuMap[s] || (n && n !== skuMap[s])) {
-            skuMap[s] = finalName;
-            mapAdded++;
+          if(!skuMap[s] && finalName){
+            skuMap[s] = finalName; mapAdded++;
+          }else if(n && skuMap[s] !== n){
+            skuMap[s] = n; mapAdded++;
           }
           continue;
         }
 
         const finalName = n || skuMap[s] || 'Sản phẩm mới';
-        if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
+        if(!skuMap[s] || (n && n !== skuMap[s])) { skuMap[s] = finalName; mapAdded++; }
 
         const exist = data.find(x => x.sku === s && x.hsd === h);
         if(exist){
@@ -1147,13 +1236,13 @@
       saveStorage();
       render();
       syncClearState();
-      showToast(`✅ Import: Danh mục +${mapAdded}, HSD +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
+      showToast(`✅ Import: DS SP +${mapAdded}, Đã kiểm +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
     }catch(e){
       showToast('❌ Import lỗi');
     }
   }
 
-  function exportCSV(){
+  function exportCheckedCSV(){
     try{
       const out = [...data].sort((a,b) => a.hsd.localeCompare(b.hsd));
       let csv = '\uFEFF' + ['sku','name','hsd'].join(',') + '\n';
@@ -1165,12 +1254,40 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'kiem_date.csv';
+      a.download = 'kiem_date_da_kiem.csv';
       a.rel = 'noopener';
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1500);
 
-      showToast('📤 Đã xuất CSV');
+      showToast('📤 Đã xuất: DS đã kiểm');
+    }catch(e){
+      showToast('❌ Không xuất được');
+    }
+  }
+
+  function exportProductsCSV(){
+    try{
+      const entries = Object.entries(skuMap || {})
+        .map(([sku, name]) => ({ sku: trim(sku), name: trim(name) }))
+        .filter(x => x.sku);
+
+      entries.sort((a,b) => a.sku.localeCompare(b.sku));
+
+      let csv = '\uFEFF' + ['sku','name'].join(',') + '\n';
+      entries.forEach(it => {
+        csv += [toCSVCell(it.sku), toCSVCell(it.name)].join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kiem_date_danh_sach_san_pham.csv';
+      a.rel = 'noopener';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+      showToast('📤 Đã xuất: DS sản phẩm');
     }catch(e){
       showToast('❌ Không xuất được');
     }
@@ -1183,7 +1300,7 @@
       if(!t){ showToast('⚠️ Clipboard trống'); return; }
       skuI.value = trim(t);
       syncClearState();
-      updateSuggestions(); // paste xong thì cập nhật ngay
+      updateSuggestions();
       hsdI.focus();
       showToast('📋 Đã dán SKU');
     }catch(e){
@@ -1213,7 +1330,19 @@
     csvIn.value = '';
   });
 
-  btnExport.addEventListener('click', exportCSV);
+  // ✅ Nút xuất: chỉ bấm nút mới xuất, không chọn thì bấm X / bấm ngoài để huỷ
+  btnExport.addEventListener('click', async () => {
+    const pick = await openChoice2({
+      title:'Chọn loại CSV',
+      text:'', // ✅ bỏ đoạn chữ dài
+      aText:'Xuất đã kiểm',
+      bText:'Xuất sản phẩm'
+    });
+
+    if(pick === 'a') exportCheckedCSV();
+    else if(pick === 'b') exportProductsCSV();
+    // pick null => huỷ, không làm gì
+  });
 
   btnClearAll.addEventListener('click', async () => {
     const ok = await openConfirm({
