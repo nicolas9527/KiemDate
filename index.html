@@ -431,7 +431,10 @@
       <div class="manager-row">
         <input type="file" id="csvIn" hidden accept=".csv,text/csv" />
         <button id="btnImport" class="tool-btn" type="button">📥 NHẬP CSV</button>
+
+        <!-- ✅ XUẤT CSV: chọn 1 trong 2 (sản phẩm / đã kiểm) -->
         <button id="btnExport" class="tool-btn primary" type="button">📤 XUẤT CSV</button>
+
         <button id="btnClearAll" class="tool-btn danger" type="button">🧹 XOÁ ALL</button>
       </div>
 
@@ -495,8 +498,8 @@
   const KEY_V2_MAP = 'kiemdate_v2_skuMap';
 
   // ========= State =========
-  let data = [];     // {id, sku, name, hsd, createdAt}
-  let skuMap = {};   // {sku: name}
+  let data = [];     // {id, sku, name, hsd, createdAt}  => danh sách đã kiểm (có HSD)
+  let skuMap = {};   // {sku: name}                      => danh sách sản phẩm (SKU <-> Tên)
   let editingId = null;
 
   // ========= Utils =========
@@ -796,6 +799,8 @@
 
     const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
 
+    // ✅ Nếu nhập thủ công mã + tên => luôn lưu vào danh sách sản phẩm (skuMap)
+    // (skuMap được lưu localStorage và sẽ xuất được CSV danh sách sản phẩm)
     if(skuMap[s] && nIn && skuMap[s] !== nIn){
       const ok = await openConfirm({
         title:'Đổi tên SKU?',
@@ -1122,6 +1127,7 @@
         const rawH = row[idxHsd];
         const h = normalizeDateToISO(rawH ?? '');
 
+        // ✅ Nếu CSV chỉ có SKU + NAME (không có HSD) => chỉ thêm vào danh sách sản phẩm (skuMap)
         if(!rawH || !trim(rawH) || !validISODate(h)){
           const finalName = n || skuMap[s] || 'Sản phẩm mới';
           if(!skuMap[s] || (n && n !== skuMap[s])) {
@@ -1131,6 +1137,7 @@
           continue;
         }
 
+        // ✅ Có HSD => thêm vào danh sách đã kiểm (data) + cập nhật skuMap
         const finalName = n || skuMap[s] || 'Sản phẩm mới';
         if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
 
@@ -1153,27 +1160,88 @@
     }
   }
 
-  function exportCSV(){
+  function downloadCSV(filename, csvText){
+    const blob = new Blob([csvText], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  // ✅ (1) Xuất danh sách đã kiểm: sku,name,hsd
+  function exportCheckedCSV(){
     try{
       const out = [...data].sort((a,b) => a.hsd.localeCompare(b.hsd));
       let csv = '\uFEFF' + ['sku','name','hsd'].join(',') + '\n';
       out.forEach(it => {
         csv += [toCSVCell(it.sku), toCSVCell(it.name), toCSVCell(it.hsd)].join(',') + '\n';
       });
-
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'kiem_date.csv';
-      a.rel = 'noopener';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1500);
-
-      showToast('📤 Đã xuất CSV');
+      downloadCSV('kiem_date_da_kiem.csv', csv);
+      showToast('📤 Đã xuất: Danh sách đã kiểm');
     }catch(e){
       showToast('❌ Không xuất được');
     }
+  }
+
+  // ✅ (2) Xuất danh sách sản phẩm: sku,name (lấy từ skuMap)
+  function exportProductsCSV(){
+    try{
+      const entries = Object.entries(skuMap || {})
+        .map(([sku, name]) => ({ sku: trim(sku), name: trim(name) }))
+        .filter(x => x.sku);
+
+      // bổ sung những SKU có trong data nhưng chưa có skuMap (phòng trường hợp lỗi)
+      (Array.isArray(data) ? data : []).forEach(it => {
+        const s = trim(it?.sku);
+        const n = trim(it?.name);
+        if(!s) return;
+        if(!entries.some(x => x.sku === s)){
+          entries.push({ sku:s, name:n });
+        }
+      });
+
+      // sort theo tên rồi sku cho dễ nhìn
+      entries.sort((a,b) => {
+        const an = (a.name || '').toLowerCase();
+        const bn = (b.name || '').toLowerCase();
+        if(an !== bn) return an.localeCompare(bn);
+        return a.sku.localeCompare(b.sku);
+      });
+
+      let csv = '\uFEFF' + ['sku','name'].join(',') + '\n';
+      entries.forEach(it => {
+        csv += [toCSVCell(it.sku), toCSVCell(it.name)].join(',') + '\n';
+      });
+
+      downloadCSV('danh_sach_san_pham.csv', csv);
+      showToast('📤 Đã xuất: Danh sách sản phẩm');
+    }catch(e){
+      showToast('❌ Không xuất được');
+    }
+  }
+
+  // ✅ Chọn loại CSV khi bấm XUẤT
+  async function chooseExport(){
+    const hasProducts = Object.keys(skuMap || {}).length > 0;
+    const hasChecked = (Array.isArray(data) && data.length > 0);
+
+    if(!hasProducts && !hasChecked){
+      showToast('⚠️ Chưa có dữ liệu để xuất');
+      return;
+    }
+
+    const ok = await openConfirm({
+      title: 'Chọn loại CSV',
+      text: 'OK = Xuất DANH SÁCH SẢN PHẨM (SKU + Tên)\nHuỷ = Xuất DANH SÁCH ĐÃ KIỂM (SKU + Tên + HSD)',
+      okText: 'Xuất sản phẩm',
+      cancelText: 'Xuất đã kiểm'
+    });
+
+    if(ok) exportProductsCSV();
+    else exportCheckedCSV();
   }
 
   // ========= Clipboard paste =========
@@ -1213,7 +1281,8 @@
     csvIn.value = '';
   });
 
-  btnExport.addEventListener('click', exportCSV);
+  // ✅ đổi export: chọn 1 trong 2
+  btnExport.addEventListener('click', chooseExport);
 
   btnClearAll.addEventListener('click', async () => {
     const ok = await openConfirm({
