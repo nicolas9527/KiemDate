@@ -446,14 +446,12 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- ✅ Modal dùng chung: confirm + lựa chọn xuất -->
   <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal">
       <h2 id="modalTitle">Xác nhận</h2>
       <p id="modalText">Bạn chắc chứ?</p>
       <div class="btn-row">
         <button id="modalCancel" class="btn btn-cancel" type="button">Huỷ</button>
-        <button id="modalAlt" class="btn btn-save" type="button" style="display:none;">Tuỳ chọn</button>
         <button id="modalOk" class="btn btn-danger" type="button">Đồng ý</button>
       </div>
     </div>
@@ -490,7 +488,6 @@
   const modalTitle = document.getElementById('modalTitle');
   const modalText = document.getElementById('modalText');
   const modalCancel = document.getElementById('modalCancel');
-  const modalAlt = document.getElementById('modalAlt');
   const modalOk = document.getElementById('modalOk');
 
   // ========= Storage keys =========
@@ -498,8 +495,8 @@
   const KEY_V2_MAP = 'kiemdate_v2_skuMap';
 
   // ========= State =========
-  let data = [];     // {id, sku, name, hsd, createdAt}  (danh sách đã kiểm)
-  let skuMap = {};   // {sku: name}                      (danh sách sản phẩm)
+  let data = [];     // {id, sku, name, hsd, createdAt}
+  let skuMap = {};   // {sku: name}
   let editingId = null;
 
   // ========= Utils =========
@@ -526,20 +523,12 @@
     showToast._t = setTimeout(()=> toastEl.style.display='none', ms);
   }
 
-  // ✅ Confirm 2 nút (Huỷ / OK)
   function openConfirm({title='Xác nhận', text='Bạn chắc chứ?', okText='Đồng ý', cancelText='Huỷ'}){
     return new Promise(resolve => {
       modalTitle.textContent = title;
       modalText.textContent = text;
-
-      // trạng thái nút
-      modalAlt.style.display = 'none';
-      modalOk.style.display = '';
-      modalCancel.style.display = '';
-
       modalOk.textContent = okText;
       modalCancel.textContent = cancelText;
-
       modalBackdrop.style.display = 'flex';
 
       const cleanup = () => {
@@ -554,59 +543,6 @@
 
       modalCancel.addEventListener('click', onCancel);
       modalOk.addEventListener('click', onOk);
-      modalBackdrop.addEventListener('click', onBackdrop);
-    });
-  }
-
-  // ✅ Popup chọn 2 lựa chọn (A / B) + Huỷ
-  // returns: 'a' | 'b' | null
-  function openChoice2({
-    title='Chọn',
-    text='Bạn muốn chọn mục nào?',
-    aText='Lựa chọn A',
-    bText='Lựa chọn B',
-    cancelText='Huỷ'
-  }){
-    return new Promise(resolve => {
-      modalTitle.textContent = title;
-      modalText.textContent = text;
-
-      // dùng 3 nút: Cancel + Alt + OK
-      modalCancel.style.display = '';
-      modalAlt.style.display = '';
-      modalOk.style.display = '';
-
-      modalCancel.textContent = cancelText;
-      modalAlt.textContent = aText; // A
-      modalOk.textContent = bText;  // B
-
-      // chỉnh màu nút cho hợp ngữ cảnh xuất
-      modalCancel.className = 'btn btn-cancel';
-      modalAlt.className = 'btn btn-save';
-      modalOk.className = 'btn btn-paste';
-
-      modalBackdrop.style.display = 'flex';
-
-      const cleanup = () => {
-        modalBackdrop.style.display = 'none';
-        modalCancel.removeEventListener('click', onCancel);
-        modalAlt.removeEventListener('click', onA);
-        modalOk.removeEventListener('click', onB);
-        modalBackdrop.removeEventListener('click', onBackdrop);
-        // trả về màu mặc định như cũ
-        modalOk.className = 'btn btn-danger';
-        modalAlt.className = 'btn btn-save';
-        modalCancel.className = 'btn btn-cancel';
-      };
-
-      const onCancel = () => { cleanup(); resolve(null); };
-      const onA = () => { cleanup(); resolve('a'); };
-      const onB = () => { cleanup(); resolve('b'); };
-      const onBackdrop = (e) => { if(e.target === modalBackdrop){ cleanup(); resolve(null); } };
-
-      modalCancel.addEventListener('click', onCancel);
-      modalAlt.addEventListener('click', onA);
-      modalOk.addEventListener('click', onB);
       modalBackdrop.addEventListener('click', onBackdrop);
     });
   }
@@ -858,8 +794,6 @@
     if(!s){ showToast('⚠️ Vui lòng nhập SKU'); skuI.focus(); syncClearState(); return; }
     if(!validISODate(h)){ showToast('⚠️ HSD không hợp lệ'); hsdI.focus(); syncClearState(); return; }
 
-    // ✅ luôn ưu tiên lưu SKU->Tên vào danh sách sản phẩm (skuMap)
-    // (nếu trùng thì bỏ qua; nếu đổi tên thì hỏi)
     const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
 
     if(skuMap[s] && nIn && skuMap[s] !== nIn){
@@ -877,8 +811,7 @@
       }
     }
 
-    if(!skuMap[s] || (nIn && trim(nIn))){
-      // nếu đã có mà trùng tên thì coi như không thêm mới
+    if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) {
       skuMap[s] = trim(nameI.value) || skuMap[s] || finalName;
     }
 
@@ -1189,25 +1122,17 @@
         const rawH = row[idxHsd];
         const h = normalizeDateToISO(rawH ?? '');
 
-        // ✅ Dòng không có HSD: vẫn lưu vào danh sách sản phẩm (skuMap) để lần sau xuất DS sản phẩm
         if(!rawH || !trim(rawH) || !validISODate(h)){
           const finalName = n || skuMap[s] || 'Sản phẩm mới';
-          // nếu đã có y hệt thì coi như không thêm
-          if(!skuMap[s] && finalName){
+          if(!skuMap[s] || (n && n !== skuMap[s])) {
             skuMap[s] = finalName;
-            mapAdded++;
-          }else if(n && skuMap[s] !== n){
-            skuMap[s] = n;
             mapAdded++;
           }
           continue;
         }
 
         const finalName = n || skuMap[s] || 'Sản phẩm mới';
-        if(!skuMap[s] || (n && n !== skuMap[s])) {
-          skuMap[s] = finalName;
-          mapAdded++;
-        }
+        if(!skuMap[s] || (finalName && finalName !== 'Sản phẩm mới')) skuMap[s] = finalName;
 
         const exist = data.find(x => x.sku === s && x.hsd === h);
         if(exist){
@@ -1222,14 +1147,13 @@
       saveStorage();
       render();
       syncClearState();
-      showToast(`✅ Import: DS SP +${mapAdded}, Đã kiểm +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
+      showToast(`✅ Import: Danh mục +${mapAdded}, HSD +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
     }catch(e){
       showToast('❌ Import lỗi');
     }
   }
 
-  // ✅ Xuất danh sách đã kiểm (giữ nguyên như trước)
-  function exportCheckedCSV(){
+  function exportCSV(){
     try{
       const out = [...data].sort((a,b) => a.hsd.localeCompare(b.hsd));
       let csv = '\uFEFF' + ['sku','name','hsd'].join(',') + '\n';
@@ -1241,41 +1165,12 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'kiem_date_da_kiem.csv';
+      a.download = 'kiem_date.csv';
       a.rel = 'noopener';
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1500);
 
-      showToast('📤 Đã xuất: DS đã kiểm');
-    }catch(e){
-      showToast('❌ Không xuất được');
-    }
-  }
-
-  // ✅ Xuất danh sách sản phẩm (skuMap) - không trùng
-  function exportProductsCSV(){
-    try{
-      const entries = Object.entries(skuMap || {})
-        .map(([sku, name]) => ({ sku: trim(sku), name: trim(name) }))
-        .filter(x => x.sku);
-
-      entries.sort((a,b) => a.sku.localeCompare(b.sku));
-
-      let csv = '\uFEFF' + ['sku','name'].join(',') + '\n';
-      entries.forEach(it => {
-        csv += [toCSVCell(it.sku), toCSVCell(it.name)].join(',') + '\n';
-      });
-
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'kiem_date_danh_sach_san_pham.csv';
-      a.rel = 'noopener';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1500);
-
-      showToast('📤 Đã xuất: DS sản phẩm');
+      showToast('📤 Đã xuất CSV');
     }catch(e){
       showToast('❌ Không xuất được');
     }
@@ -1318,18 +1213,7 @@
     csvIn.value = '';
   });
 
-  // ✅ Nút xuất: hiện popup 2 lựa chọn
-  btnExport.addEventListener('click', async () => {
-    const pick = await openChoice2({
-      title:'📤 XUẤT CSV',
-      text:'Bạn muốn xuất loại nào?',
-      aText:'📦 DS SẢN PHẨM',
-      bText:'📅 DS ĐÃ KIỂM',
-      cancelText:'Huỷ'
-    });
-    if(pick === 'a') exportProductsCSV();
-    else if(pick === 'b') exportCheckedCSV();
-  });
+  btnExport.addEventListener('click', exportCSV);
 
   btnClearAll.addEventListener('click', async () => {
     const ok = await openConfirm({
