@@ -1392,9 +1392,30 @@
     if(!e.target.closest('.input-group')) hideSuggestions();
   });
 
+  function scrollToEditForm(){
+    const inputBox = document.querySelector('.input-box');
+    if(!inputBox) return;
+
+    const targetY = Math.max(
+      0,
+      inputBox.getBoundingClientRect().top + window.pageYOffset - 10
+    );
+
+    window.scrollTo({
+      top: targetY,
+      behavior: 'smooth'
+    });
+
+    setTimeout(() => {
+      nameI.focus();
+      if (typeof nameI.select === 'function') nameI.select();
+    }, 320);
+  }
+
   function enterEdit(id){
     const item = data.find(x => x.id === id);
     if(!item) return;
+
     editingId = id;
     skuI.value = item.sku;
     nameI.value = item.name;
@@ -1404,6 +1425,13 @@
     editRow.style.animation = 'fadeUp .24s cubic-bezier(.22,.8,.2,1)';
     hideSuggestions();
     syncClearState();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToEditForm();
+      });
+    });
+
     showToast('✏️ Đang sửa dòng');
   }
 
