@@ -397,6 +397,9 @@
       animation:fadeUp .65s var(--ease);
       position:relative;
       overflow:hidden;
+      background:var(--card);
+      backdrop-filter:var(--blur);
+      -webkit-backdrop-filter:var(--blur);
     }
 
     .data-manager::before{
@@ -432,7 +435,7 @@
     .manager-row{
       display:flex;
       gap:8px;
-      margin-bottom:10px;
+      margin-bottom:0;
       flex-wrap:wrap;
       position:relative;
       z-index:1;
@@ -482,6 +485,39 @@
       background:rgba(255,255,255,0.82);
     }
 
+    .search-sticky-wrap{
+      position:sticky;
+      top:8px;
+      z-index:45;
+      margin-bottom:12px;
+    }
+
+    .search-sticky-wrap::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-8px;
+      height:16px;
+      pointer-events:none;
+      background:linear-gradient(to bottom, rgba(25,118,210,0.08), rgba(25,118,210,0));
+      opacity:.55;
+    }
+
+    .search-sticky-box{
+      background:rgba(255,255,255,0.84);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.6);
+      box-shadow:0 10px 28px rgba(15,23,42,0.08);
+      border-radius:24px;
+      padding:8px;
+    }
+
+    .search-sticky-box.field{
+      position:relative;
+    }
+
     .search-bar{
       width:100%;
       height:46px;
@@ -498,6 +534,7 @@
         box-shadow .22s var(--ease),
         transform .18s var(--ease),
         background .22s var(--ease);
+      margin:0;
     }
 
     .search-bar:focus{
@@ -859,7 +896,6 @@
         opacity .18s var(--ease),
         box-shadow .18s var(--ease);
       opacity:0;
-      position:absolute;
       overflow:hidden;
     }
 
@@ -978,8 +1014,10 @@
         <button id="btnExport" class="tool-btn primary" type="button" data-tab="1">📤 XUẤT CSV</button>
         <button id="btnClearAll" class="tool-btn danger" type="button" data-tab="2">🧹 XOÁ ALL</button>
       </div>
+    </div>
 
-      <div class="field">
+    <div class="search-sticky-wrap">
+      <div class="field search-sticky-box">
         <input id="search" class="search-bar" type="text" placeholder="Tìm tên / SKU / HSD..." />
         <button class="clear-btn" type="button" aria-label="Xoá ô Tìm" data-clear="search">✕</button>
       </div>
@@ -1046,16 +1084,14 @@
   let data = [];
   let skuMap = {};
   let editingId = null;
-  let lastSummarySnapshot = { total:'0', expired:'0', d7:'0', d30:'0' };
 
   const now = () => Date.now();
+  const trim = (s) => (s ?? '').toString().trim();
 
   function uid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
     return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
   }
-
-  const trim = (s) => (s ?? '').toString().trim();
 
   function debounce(fn, ms = 120) {
     let t = null;
@@ -1109,9 +1145,7 @@
       modalBackdrop.style.display = 'none';
     }, 220);
 
-    modalCtl.cleanupFns.forEach(fn => {
-      try{ fn(); }catch{}
-    });
+    modalCtl.cleanupFns.forEach(fn => { try{ fn(); }catch{} });
     modalCtl.cleanupFns = [];
 
     const r = modalCtl.resolve;
@@ -1241,7 +1275,7 @@
       localStorage.setItem(KEY_V2, JSON.stringify(data));
       localStorage.setItem(KEY_V2_MAP, JSON.stringify(skuMap));
       return true;
-    }catch(e){
+    }catch{
       showToast('❌ Không lưu được (localStorage bị chặn)');
       return false;
     }
@@ -1407,8 +1441,7 @@
     });
 
     setTimeout(() => {
-      nameI.focus();
-      if (typeof nameI.select === 'function') nameI.select();
+      hsdI.focus();
     }, 320);
   }
 
@@ -1420,9 +1453,11 @@
     skuI.value = item.sku;
     nameI.value = item.name;
     hsdI.value = item.hsd;
+
     btnSave.textContent = '✅ Cập nhật';
     editRow.style.display = 'flex';
     editRow.style.animation = 'fadeUp .24s cubic-bezier(.22,.8,.2,1)';
+
     hideSuggestions();
     syncClearState();
 
@@ -1594,13 +1629,6 @@
     animateNumberIfChanged(sumExpired, expired);
     animateNumberIfChanged(sum7, le7);
     animateNumberIfChanged(sum30, le30);
-
-    lastSummarySnapshot = {
-      total:String(items.length),
-      expired:String(expired),
-      d7:String(le7),
-      d30:String(le30)
-    };
   }
 
   function render(){
@@ -1835,7 +1863,7 @@
       render();
       syncClearState();
       showToast(`✅ Import: DS SP +${mapAdded}, Đã kiểm +${added}, cập nhật ${updated}, bỏ qua ${skipped}`);
-    }catch(e){
+    }catch{
       showToast('❌ Import lỗi');
     }
   }
@@ -1858,7 +1886,7 @@
       setTimeout(() => URL.revokeObjectURL(url), 1500);
 
       showToast('📤 Đã xuất: DS đã kiểm');
-    }catch(e){
+    }catch{
       showToast('❌ Không xuất được');
     }
   }
@@ -1886,7 +1914,7 @@
       setTimeout(() => URL.revokeObjectURL(url), 1500);
 
       showToast('📤 Đã xuất: DS sản phẩm');
-    }catch(e){
+    }catch{
       showToast('❌ Không xuất được');
     }
   }
@@ -1900,7 +1928,7 @@
       updateSuggestions();
       hsdI.focus();
       showToast('📋 Đã dán SKU');
-    }catch(e){
+    }catch{
       showToast('⚠️ Clipboard bị chặn');
     }
   }
