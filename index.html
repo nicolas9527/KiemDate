@@ -1,3 +1,5 @@
+Dưới đây là bản đầy đủ đã sửa, trùng SKU + HSD sẽ tự gộp luôn và hiện thông báo 🔗 Đã gộp dòng trùng.
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1456,8 +1458,19 @@
     const nIn = trim(nameI.value);
     const h = normalizeDateToISO(hsdI.value);
 
-    if(!s){ showToast('⚠️ Vui lòng nhập SKU'); skuI.focus(); syncClearState(); return; }
-    if(!validISODate(h)){ showToast('⚠️ HSD không hợp lệ'); hsdI.focus(); syncClearState(); return; }
+    if(!s){
+      showToast('⚠️ Vui lòng nhập SKU');
+      skuI.focus();
+      syncClearState();
+      return;
+    }
+
+    if(!validISODate(h)){
+      showToast('⚠️ HSD không hợp lệ');
+      hsdI.focus();
+      syncClearState();
+      return;
+    }
 
     const finalName = nIn || skuMap[s] || 'Sản phẩm mới';
 
@@ -1468,6 +1481,7 @@
         okText:'Đổi tất cả',
         cancelText:'Giữ tên cũ'
       });
+
       if(ok){
         skuMap[s] = nIn;
         data.forEach(it => { if(it.sku === s) it.name = nIn; });
@@ -1480,27 +1494,26 @@
       skuMap[s] = trim(nameI.value) || skuMap[s] || finalName;
     }
 
+    // Tự gộp khi trùng SKU + HSD, không hỏi nữa
     if(editingId){
       const idx = data.findIndex(x => x.id === editingId);
-      if(idx === -1){ showToast('⚠️ Không tìm thấy dòng để sửa'); exitEdit(); return; }
+      if(idx === -1){
+        showToast('⚠️ Không tìm thấy dòng để sửa');
+        exitEdit();
+        return;
+      }
 
       const dup = data.find(x => x.id !== editingId && x.sku === s && x.hsd === h);
+
       if(dup){
-        const ok = await openConfirm({
-          title:'Trùng SKU + HSD',
-          text:'Đã có dòng khác cùng SKU và HSD. Bạn muốn gộp (xoá dòng đang sửa)?',
-          okText:'Gộp',
-          cancelText:'Không'
-        });
-        if(ok){
-          dup.name = skuMap[s] || finalName;
-          data.splice(idx, 1);
-          saveStorage();
-          render();
-          syncClearState();
-          showToast('✅ Đã gộp');
-          exitEdit();
-        }
+        dup.name = skuMap[s] || finalName;
+        data.splice(idx, 1);
+
+        saveStorage();
+        render();
+        syncClearState();
+        showToast('🔗 Đã gộp dòng trùng');
+        exitEdit();
         return;
       }
 
@@ -1518,25 +1531,15 @@
 
     const exist = data.find(x => x.sku === s && x.hsd === h);
     if(exist){
-      const ok = await openConfirm({
-        title:'Đã tồn tại',
-        text:'Dòng này (cùng SKU + HSD) đã có. Cập nhật tên cho dòng đó?',
-        okText:'Cập nhật',
-        cancelText:'Thêm mới'
-      });
-
-      if(ok){
-        exist.name = skuMap[s] || finalName;
-      }else{
-        data.push({ id: uid(), sku:s, name: skuMap[s] || finalName, hsd:h, createdAt: now() });
-      }
+      exist.name = skuMap[s] || finalName;
 
       saveStorage();
       render();
-      showToast('✅ Xong');
-      skuI.value='';
-      nameI.value='';
-      hsdI.value='';
+      showToast('🔗 Đã gộp dòng trùng');
+
+      skuI.value = '';
+      nameI.value = '';
+      hsdI.value = '';
       syncClearState();
       return;
     }
@@ -1545,9 +1548,10 @@
     saveStorage();
     render();
     showToast('✅ Đã lưu');
-    skuI.value='';
-    nameI.value='';
-    hsdI.value='';
+
+    skuI.value = '';
+    nameI.value = '';
+    hsdI.value = '';
     syncClearState();
   }
 
