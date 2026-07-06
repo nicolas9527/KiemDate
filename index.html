@@ -96,6 +96,8 @@
       font-weight:900;
       color:#64748b;
       margin:-6px 0 10px;
+      animation:fadeDown .45s var(--ease);
+      text-shadow:0 1px 0 rgba(255,255,255,.7);
     }
 
     .sync-line.ok{ color:var(--ok); }
@@ -137,6 +139,7 @@
       font-size:13px;
       display:block;
       margin:0 0 6px 8px;
+      transition:transform .2s var(--ease), opacity .2s var(--ease);
     }
 
     input[type="text"],
@@ -185,7 +188,15 @@
       opacity:.85;
     }
 
-    input::placeholder{ color:#8fa1b6; }
+    input::placeholder{
+      color:#8fa1b6;
+      transition:opacity .2s var(--ease), transform .2s var(--ease);
+    }
+
+    input:focus::placeholder{
+      color:transparent;
+      transform:translateY(-2px);
+    }
     input:focus{
       border-color:rgba(100,181,246,0.95);
       background:rgba(255,255,255,0.96);
@@ -213,17 +224,30 @@
       font-weight:1000;
       color:#64748b;
       cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
       box-shadow:0 6px 14px rgba(15,23,42,0.06);
+      transition:transform .18s var(--ease-bounce), opacity .18s var(--ease), box-shadow .18s var(--ease);
+      opacity:0;
+      overflow:hidden;
     }
 
-    .field.has-value .clear-btn{ display:flex; }
+    .clear-btn:active{
+      transform:translateY(-50%) scale(0.9);
+    }
+
+    .field.has-value .clear-btn{
+      display:flex;
+      opacity:1;
+      transform:translateY(-50%) scale(1);
+    }
 
     .suggestions{
       position:absolute;
       top:76px;
       left:0;
       right:0;
-      background:rgba(255,255,255,0.92);
+      background:rgba(255,255,255,0.9);
       backdrop-filter:blur(18px);
       -webkit-backdrop-filter:blur(18px);
       border-radius:15px;
@@ -233,9 +257,16 @@
       overflow:auto;
       display:none;
       border:1px solid rgba(255,255,255,0.65);
+      transform:translateY(8px);
+      opacity:0;
+      transition:opacity .22s var(--ease), transform .22s var(--ease);
     }
 
-    .suggestions.show{ display:block; }
+    .suggestions.show{
+      display:block;
+      opacity:1;
+      transform:translateY(0);
+    }
 
     .sug-item{
       padding:12px 14px;
@@ -244,9 +275,15 @@
       color:#333;
       text-align:left;
       cursor:pointer;
+      transition:background .18s var(--ease), transform .18s var(--ease);
+      transform:translateX(0);
     }
 
-    .sug-item:hover{ background:#f6faff; }
+    .sug-item:hover,
+    .sug-item:active{
+      background:#f6faff;
+      transform:translateX(2px);
+    }
     .sug-item b{ display:block;font-size:14px; }
     .sug-item small{ color:#6b7280;font-weight:700;display:block;margin-top:2px; }
 
@@ -278,7 +315,27 @@
       overflow:hidden;
     }
 
-    .btn:hover{ transform:translateY(-1px) scale(1.01); }
+    .btn::after,
+    .tool-btn::after,
+    .icon-btn::after,
+    .clear-btn::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(255,255,255,0.28), transparent 55%);
+      opacity:0;
+      transition:opacity .22s var(--ease);
+      pointer-events:none;
+    }
+
+    .btn:hover::after,
+    .tool-btn:hover::after,
+    .icon-btn:hover::after,
+    .clear-btn:hover::after{
+      opacity:1;
+    }
+
+    .btn:hover{ transform:translateY(-1px) scale(1.01); filter:saturate(1.04); }
     .btn:active{ transform:scale(.965); }
     .btn-paste{ background:linear-gradient(180deg,#78c3ff 0%,#58acef 100%); }
     .btn-save{ background:linear-gradient(180deg,#2f8ae8 0%,#1976d2 100%); }
@@ -302,6 +359,12 @@
       padding:10px;
       text-align:center;
       box-shadow:0 8px 24px rgba(15,23,42,0.05);
+      transition:transform .24s var(--ease), box-shadow .24s var(--ease), background .24s var(--ease);
+    }
+
+    .chip:hover{
+      transform:translateY(-2px);
+      box-shadow:0 14px 28px rgba(15,23,42,0.08);
     }
 
     .chip .n{ font-weight:1000;font-size:18px;line-height:1.2;display:inline-block; }
@@ -316,6 +379,36 @@
       animation:fadeUp .65s var(--ease);
       position:relative;
       overflow:hidden;
+    }
+
+    .data-manager::before{
+      content:"";
+      position:absolute;
+      left:10px;
+      right:10px;
+      top:10px;
+      height:44px;
+      border-radius:14px;
+      background:rgba(25,118,210,0.06);
+      transition:transform .32s var(--ease), opacity .22s var(--ease), width .22s var(--ease);
+      z-index:0;
+      pointer-events:none;
+      opacity:0;
+    }
+
+    .data-manager.tab-0::before{
+      opacity:1;
+      transform:translateX(0);
+    }
+
+    .data-manager.tab-1::before{
+      opacity:1;
+      transform:translateX(calc(100% + 8px));
+    }
+
+    .data-manager.tab-2::before{
+      opacity:1;
+      transform:translateX(calc(200% + 16px));
     }
 
     .manager-row{
@@ -339,7 +432,19 @@
       font-weight:900;
       cursor:pointer;
       touch-action:manipulation;
+      position:relative;
+      overflow:hidden;
+      transition:transform .16s var(--ease-bounce), box-shadow .22s var(--ease), background .22s var(--ease), color .22s var(--ease), border-color .22s var(--ease);
       box-shadow:0 6px 16px rgba(15,23,42,0.04);
+    }
+
+    .tool-btn:hover{
+      transform:translateY(-1px) scale(1.01);
+      box-shadow:0 10px 22px rgba(25,118,210,0.10);
+    }
+
+    .tool-btn:active{
+      transform:scale(0.97);
     }
 
     .tool-btn.primary{
@@ -366,6 +471,14 @@
       outline:none;
       box-shadow:0 4px 16px rgba(15,23,42,0.04);
       margin:0;
+      transition:border-color .22s var(--ease), box-shadow .22s var(--ease), transform .18s var(--ease), background .22s var(--ease);
+    }
+
+    .search-bar:focus{
+      transform:translateY(-1px);
+      background:#fff;
+      border-color:#90caf9;
+      box-shadow:0 0 0 4px rgba(100,181,246,0.14), 0 10px 20px rgba(25,118,210,0.06);
     }
 
     .item{
@@ -388,7 +501,18 @@
       animation:itemIn .34s var(--ease) forwards;
     }
 
-    .item:hover{ transform:translateY(-2px);box-shadow:0 16px 30px rgba(15,23,42,0.10); }
+    .item:hover{
+      transform:translateY(-2px);
+      box-shadow:0 16px 30px rgba(15,23,42,0.10);
+    }
+
+    .item::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(255,255,255,0.22), transparent 45%);
+      pointer-events:none;
+    }
     .c-red{ border-left-color:var(--danger);background:rgba(255,251,251,0.88); }
     .c-orange{ border-left-color:#ff9800;background:rgba(255,250,242,0.88); }
 
@@ -465,6 +589,15 @@
       appearance:none;
       -webkit-appearance:none;
       touch-action:manipulation;
+    }
+
+    .icon-btn:hover{
+      transform:translateY(-1px) scale(1.03);
+      box-shadow:0 12px 22px rgba(0,0,0,0.08);
+    }
+
+    .icon-btn:active{
+      transform:scale(0.94);
     }
 
     .icon-btn.danger{ background:rgba(255,240,240,0.9);border-color:#ffd0d0; }
@@ -580,6 +713,7 @@
 
     @keyframes pageIn{ from{opacity:0} to{opacity:1} }
     @keyframes appRise{ from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes fadeDown{ from{transform:translateY(-8px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes fadeUp{ from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes itemIn{ from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes valuePop{ 0%{transform:scale(.8);opacity:.75} 55%{transform:scale(1.14);opacity:1} 100%{transform:scale(1);opacity:1} }
@@ -1679,9 +1813,16 @@
     if(editingId) await deleteById(editingId);
   });
 
-  btnImport.addEventListener('click', () => csvIn.click());
+  btnImport.addEventListener('click', () => {
+    dataManager.classList.remove('tab-1','tab-2');
+    dataManager.classList.add('tab-0');
+    csvIn.click();
+  });
 
   btnExport.addEventListener('click', async () => {
+    dataManager.classList.remove('tab-0','tab-2');
+    dataManager.classList.add('tab-1');
+
     const pick = await openChoice2({
       title:'Chọn loại CSV',
       text:'',
@@ -1694,6 +1835,9 @@
   });
 
   btnClearAll.addEventListener('click', async () => {
+    dataManager.classList.remove('tab-0','tab-1');
+    dataManager.classList.add('tab-2');
+
     const ok = await openConfirm({
       title:'Xoá toàn bộ?',
       text:'Bạn muốn xoá tất cả dữ liệu đã kiểm? Google Sheet cũng sẽ xoá tab Checked.',
